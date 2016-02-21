@@ -1,2 +1,3 @@
 2-porque tenh de colocar o nome completo para que de?
 
+4 - nao consegue chegar ao host (ver figura wireshark)

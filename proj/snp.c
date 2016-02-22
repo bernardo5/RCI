@@ -21,7 +21,6 @@ void create_surname_register_buffer(char**buff, char**argv){
 }
 
 void destroy_surname_buffer(char**buff, char**argv){
-	empty_buffer(&(*buff));
 	sprintf(*buff, "%s %s", "SUNR ", argv[2]);
 	return;
 }
@@ -35,19 +34,18 @@ void registe(char**buff, char**argv, int fd, struct sockaddr_in addr, char*place
 	}else{
 		destroy_surname_buffer(&(*buff), argv);
 	}
-	printf("sent to server:%s\n", *buff);
+	addrlen=sizeof(addr);
 	n=sendto(fd, *buff, 128, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
 	empty_buffer(&(*buff));
 	addrlen=sizeof(addr);
-	printf("going to rcvfrom\n");
-	n=recvfrom(fd, buff, 128,0, (struct sockaddr*)&addr, &addrlen);
+	n=recvfrom(fd, *buff, 128,0, (struct sockaddr*)&addr, &addrlen);
 	if(n==-1) exit(1);//error
 	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
-	write(1, buff, n);
+	write(1, *buff, n);
 	printf("\n");
 	return;
 }

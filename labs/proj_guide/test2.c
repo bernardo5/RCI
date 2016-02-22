@@ -30,7 +30,7 @@ int main(){
 	memset((void*)&addr, (int)'\0', sizeof(addr));
 	addr.sin_family=AF_INET;
 	addr.sin_addr=*a;
-	addr.sin_port=htons(8000);
+	addr.sin_port=htons(58000);
 	
 	n=sendto(fd, "Hello!\n", 7, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
@@ -44,7 +44,7 @@ int main(){
 	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
 	write(1, buffer, n);
-	
+	printf("\n");
 	close(fd);
 		
 	exit(0);

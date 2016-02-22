@@ -11,6 +11,9 @@ test2:
 
 test3:
 	gcc test3.c -o test
+	
+tcp:
+	gcc tcp.c -o test
 
 clean:
 	rm -f *.o *.~ test *.gch

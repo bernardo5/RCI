@@ -20,12 +20,21 @@ void create_surname_register_buffer(char**buff, char**argv){
 	return;
 }
 
-void registe(char**buff, char**argv, int fd, struct sockaddr_in addr){
+void destroy_surname_buffer(char**buff, char**argv){
+	empty_buffer(&(*buff));
+	sprintf(*buff, "%s %s", "SUNR ", argv[2]);
+	return;
+}
+
+void registe(char**buff, char**argv, int fd, struct sockaddr_in addr, char*place){
 	int n;
 	socklen_t addrlen;
 	
-	
-	create_surname_register_buffer(&(*buff), argv);
+	if(strcmp(place, "register")==0){
+		create_surname_register_buffer(&(*buff), argv);
+	}else{
+		destroy_surname_buffer(&(*buff), argv);
+	}
 	printf("sent to server:%s\n", *buff);
 	n=sendto(fd, *buff, 128, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
@@ -98,9 +107,8 @@ int main(int argc, char**argv){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(port);
 	
-	registe(&buffer, argv, fd, addr);
-	
+	registe(&buffer, argv, fd, addr, "register");
+	registe(&buffer, argv, fd, addr, "exit");
 	close(fd);
-		
 	exit(0);
 }

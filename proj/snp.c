@@ -15,8 +15,31 @@ void empty_buffer(char**buff){
 	return;
 }
 
-void create_surname_register(char**buff, char**argv){
+void create_surname_register_buffer(char**buff, char**argv){
 	sprintf(*buff, "%s%s%s%s%s%s", "SREG ", argv[2], ";", argv[4], ";", argv[6]);
+	return;
+}
+
+void registe(char**buff, char**argv, int fd, struct sockaddr_in addr){
+	int n;
+	socklen_t addrlen;
+	
+	
+	create_surname_register_buffer(&(*buff), argv);
+	printf("sent to server:%s\n", *buff);
+	n=sendto(fd, *buff, 128, 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) exit(1);//error
+	
+	/*receive echo part*/
+	empty_buffer(&(*buff));
+	addrlen=sizeof(addr);
+	printf("going to rcvfrom\n");
+	n=recvfrom(fd, buff, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	write(1, buff, n);
+	printf("\n");
 	return;
 }
 
@@ -48,7 +71,7 @@ int main(int argc, char**argv){
 	/* ************************* */
 	
 	
-	int fd, n, addrlen, port;
+	int port, fd;
 	struct sockaddr_in addr;
 	struct hostent *h;
 	struct in_addr *a;
@@ -74,21 +97,9 @@ int main(int argc, char**argv){
 	addr.sin_family=AF_INET;
 	addr.sin_addr=*a;
 	addr.sin_port=htons(port);
-	create_surname_register(&buffer, argv);
-	printf("sent to server:%s\n", buffer);
-	n=sendto(fd, buffer, 128, 0, (struct sockaddr*)&addr, sizeof(addr));
-	if(n==-1) exit(1);//error
 	
-	/*receive echo part*/
-	empty_buffer(&buffer);
-	addrlen=sizeof(addr);
-	printf("going to rcvfrom\n");
-	n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-	if(n==-1) exit(1);//error
-	printf("answer to echo\n");
-	write(1, "echo: ",6);//stdout
-	write(1, buffer, n);
-	printf("\n");
+	registe(&buffer, argv, fd, addr);
+	
 	close(fd);
 		
 	exit(0);

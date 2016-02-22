@@ -16,12 +16,7 @@ void empty_buffer(char**buff){
 }
 
 void create_surname_register(char**buff, char**argv){
-	strcpy(*buff, "SREG ");
-	strcat(*buff, argv[2]);
-	strcat(*buff, ";");
-	strcat(*buff, argv[4]);
-	strcat(*buff, ";");
-	strcat(*buff, argv[6]);
+	sprintf(*buff, "%s%s%s%s%s%s", "SREG ", argv[2], ";", argv[4], ";", argv[6]);
 	return;
 }
 
@@ -58,7 +53,7 @@ int main(int argc, char**argv){
 	struct hostent *h;
 	struct in_addr *a;
 	char *buffer=malloc(128*sizeof(char));
-	empty_buffer(&buffer);
+	/*empty_buffer(&buffer);*/
 	
 	if(server_specified==1){
 		a=(struct in_addr*)argv[8];
@@ -80,9 +75,10 @@ int main(int argc, char**argv){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(port);
 	create_surname_register(&buffer, argv);
-	printf("sent to server: %s\n", buffer);
-	n=sendto(fd, buffer, 7, 0, (struct sockaddr*)&addr, sizeof(addr));
+	printf("sent to server:%s\n", buffer);
+	n=sendto(fd, buffer, 128, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
+	
 	/*receive echo part*/
 	empty_buffer(&buffer);
 	addrlen=sizeof(addr);

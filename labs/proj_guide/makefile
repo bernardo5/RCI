@@ -9,5 +9,8 @@ test1:
 test2:
 	gcc test2.c -o test
 
+test3:
+	gcc test3.c -o test
+
 clean:
 	rm -f *.o *.~ test *.gch

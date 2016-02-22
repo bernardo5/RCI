@@ -10,6 +10,21 @@
 #include <sys/types.h>
 #include <string.h>
 
+void empty_buffer(char**buff){
+	*buff[0] = '\0';
+	return;
+}
+
+void create_surname_register(char**buff, char**argv){
+	strcpy(*buff, "SREG ");
+	strcat(*buff, argv[2]);
+	strcat(*buff, ";");
+	strcat(*buff, argv[4]);
+	strcat(*buff, ";");
+	strcat(*buff, argv[6]);
+	return;
+}
+
 int main(int argc, char**argv){
 	int server_specified=0;
 	
@@ -42,7 +57,8 @@ int main(int argc, char**argv){
 	struct sockaddr_in addr;
 	struct hostent *h;
 	struct in_addr *a;
-	char buffer[128];
+	char *buffer=malloc(128*sizeof(char));
+	empty_buffer(&buffer);
 	
 	if(server_specified==1){
 		a=(struct in_addr*)argv[8];
@@ -63,12 +79,12 @@ int main(int argc, char**argv){
 	addr.sin_family=AF_INET;
 	addr.sin_addr=*a;
 	addr.sin_port=htons(port);
-	
-	n=sendto(fd, "Hello!\n", 7, 0, (struct sockaddr*)&addr, sizeof(addr));
+	create_surname_register(&buffer, argv);
+	printf("sent to server: %s\n", buffer);
+	n=sendto(fd, buffer, 7, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
-	
 	/*receive echo part*/
-	
+	empty_buffer(&buffer);
 	addrlen=sizeof(addr);
 	printf("going to rcvfrom\n");
 	n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);

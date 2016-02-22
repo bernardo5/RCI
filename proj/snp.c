@@ -38,16 +38,21 @@ int main(int argc, char**argv){
 	/* ************************* */
 	
 	
-	int fd, n, addrlen;
+	int fd, n, addrlen, port;
 	struct sockaddr_in addr;
 	struct hostent *h;
 	struct in_addr *a;
 	char buffer[128];
 	
-	/*get host IP*/
-	if((h=gethostbyname("tejo.tecnico.ulisboa.pt"))==NULL)exit(1);//error
-		
-	a=(struct in_addr*)h->h_addr_list[0];
+	if(server_specified==1){
+		a=(struct in_addr*)argv[8];
+		port=atoi(argv[10]);
+	}else{
+		/*get host IP*/
+		if((h=gethostbyname("tejo.tecnico.ulisboa.pt"))==NULL)exit(1);//error
+		a=(struct in_addr*)h->h_addr_list[0];
+		port=58000;
+	}
 	
 	/*send part*/
 	
@@ -57,7 +62,7 @@ int main(int argc, char**argv){
 	memset((void*)&addr, (int)'\0', sizeof(addr));
 	addr.sin_family=AF_INET;
 	addr.sin_addr=*a;
-	addr.sin_port=htons(58000);
+	addr.sin_port=htons(port);
 	
 	n=sendto(fd, "Hello!\n", 7, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error

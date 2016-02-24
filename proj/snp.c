@@ -14,6 +14,33 @@
 
 #define max(A,B) ((A)>=(B)?(A):(B))
 
+void check_args(int argc, char**argv, int*server_specified){
+	/*check if program was called correctly for mandatory parameters*/
+	if(argc<7){
+		printf("too few arguments\n\n");
+		printf("Please use correct call: snp -n surname -s snpip -q snpport [-i saip] [-p saport]\n");
+		exit(-1);
+	}
+	
+	if(!((strcmp(argv[1], "-n")==0)&&(strcmp(argv[3], "-s")==0)&&(strcmp(argv[5], "-q")==0))){
+		printf("Incorrect use of program call\n");
+		printf("Please use correct call: snp -n surname -s snpip -q snpport [-i saip] [-p saport]\n");
+		exit(-1);
+	}	
+	/* ************************* */
+	
+	/* check opcional parameters */
+
+	if(argc==11){
+		if(!((strcmp(argv[7], "-i")==0)&&(strcmp(argv[9], "-p")==0))){
+			printf("Incorrect use of program call, will use predefined parameters\n");
+			*server_specified=0;
+		}else *server_specified=1;
+	}	
+	/* ************************* */
+	return;
+}
+
 void empty_buffer(char**buff){
 	*buff[0] = '\0';
 	return;
@@ -57,29 +84,7 @@ void registe(char**buff, char**argv, int fd, struct sockaddr_in addr, char*place
 int main(int argc, char**argv){
 	int server_specified=0;
 	
-	/*check if program was called correctly for mandatory parameters*/
-	if(argc<7){
-		printf("too few arguments\n\n");
-		printf("Please use correct call: snp -n surname -s snpip -q snpport [-i saip] [-p saport]\n");
-		exit(-1);
-	}
-	
-	if(!((strcmp(argv[1], "-n")==0)&&(strcmp(argv[3], "-s")==0)&&(strcmp(argv[5], "-q")==0))){
-		printf("Incorrect use of program call\n");
-		printf("Please use correct call: snp -n surname -s snpip -q snpport [-i saip] [-p saport]\n");
-		exit(-1);
-	}	
-	/* ************************* */
-	
-	/* check opcional parameters */
-
-	if(argc==11){
-		if(!((strcmp(argv[7], "-i")==0)&&(strcmp(argv[9], "-p")==0))){
-			printf("Incorrect use of program call, will use predefined parameters\n");
-			server_specified=0;
-		}else server_specified=1;
-	}	
-	/* ************************* */
+	check_args(argc, argv, &server_specified);
 	
 	
 	int port, fd, ret;

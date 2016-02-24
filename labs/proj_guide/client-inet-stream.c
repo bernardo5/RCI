@@ -50,6 +50,19 @@ int main(){
 
 	read(sock_fd, buffer, 128);
 	printf("read message %s\n", buffer);
+	
+	
+	strcpy(buffer, "222222222222");
+	send(sock_fd, buffer, strlen(buffer) +1, 0);
+	perror("sendto");
+	printf("message sent: %s\n", buffer);
+	
+	printf("press enter to continue: ");
+	getchar();
+
+
+	read(sock_fd, buffer, 128);
+	printf("read message %s\n", buffer);
 					
 	exit(0);
 	

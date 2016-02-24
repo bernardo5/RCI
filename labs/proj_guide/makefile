@@ -15,6 +15,9 @@ test3:
 tcp:
 	gcc tcp_.c -o test
 	
+select:
+	gcc select.c -o select
+	
 cliente:
 	gcc client-inet-stream.c -o client
 	

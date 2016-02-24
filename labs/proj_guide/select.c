@@ -34,6 +34,12 @@ int main(void){
 	fd_set rfds;
 	enum {idle,busy} state;
 	int maxfd, counter;
+	char buffer[128];
+	
+	socklen_t addrlen;
+	struct sockaddr_in addr;
+	int n, nw;
+	char *ptr;
 	
 	if((fd=socket(AF_INET,SOCK_STREAM,0))==-1)exit(1);//error
 
@@ -66,7 +72,7 @@ int main(void){
 			switch(state)
 			{
 				case idle: afd=newfd; state=busy; break;
-				case busy: /* ... *///write “busy\n” in newfd
+				case busy: strcpy(buffer,"busy\n");ptr=&buffer[0]; if(write(newfd,ptr,n)<=0)exit(1);//error
 				close(newfd); break;
 			}
 		}
@@ -76,7 +82,8 @@ int main(void){
 			if((n=read(afd,buffer,128))!=0)
 			{
 				if(n==-1)exit(1);//error
-				/* ... */// write buffer in afd
+				ptr=&buffer[0];
+				if(write(afd,ptr,n)<=0)exit(1);
 			}
 			else{close(afd); state=idle;}//connection closed by peer
 		}

@@ -146,7 +146,6 @@ int main(int argc, char**argv){
 		FD_SET(fileno(stdin), &rfds);
 		counter=select(fd + fileno(stdin) + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
 //-------------------------------------------------------------------------------------------------------------------AQUI
-		printf("passou?\n");
 		if(counter<=0){
 			printf("Error in select\n");
 			exit(1);//errror

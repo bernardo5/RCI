@@ -8,8 +8,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-#include <string.h>
 #include <netdb.h>
+#include <sys/un.h>
+#include <sys/time.h>
+
+#define max(A,B) ((A)>=(B)?(A):(B))
 
 void empty_buffer(char**buff){
 	*buff[0] = '\0';
@@ -79,11 +82,16 @@ int main(int argc, char**argv){
 	/* ************************* */
 	
 	
-	int port, fd;
-	struct sockaddr_in addr;
+	int port, fd, afd, newfd, ret;
+	struct sockaddr_in addr, addr_server;
 	struct hostent *h;
 	struct in_addr *a;
 	char *buffer=malloc(128*sizeof(char));
+	fd_set rfds;
+	enum {idle,busy} state;
+	int maxfd, counter;
+	int n, nw;
+	char *ptr;
 	/*empty_buffer(&buffer);*/
 	
 	if(server_specified==1){
@@ -106,7 +114,56 @@ int main(int argc, char**argv){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(port);
 	
+	memset((void*)&addr_server, (int)'\0', sizeof(addr_server));
+	addr_server.sin_family=AF_INET;
+	addr_server.sin_addr.s_addr=htonl(INADDR_ANY);
+	addr_server.sin_port=htons(9000);
+	
 	registe(&buffer, argv, fd, addr, "register");
+	
+	ret=bind(fd, (struct sockaddr*)&addr_server, sizeof(addr_server));
+	if(ret==-1)exit(1);//error
+	
+	state=idle;
+	
+	while(1){
+		FD_ZERO(&rfds);
+		FD_SET(fd,&rfds);maxfd=fd;
+		FD_SET(STDIN_FILENO, &rfds);
+		
+		if(state==busy){
+			FD_SET(afd,&rfds);
+			maxfd=max(maxfd,afd);
+		}
+		counter=select(maxfd + STDIN_FILENO + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
+//-------------------------------------------------------------------------------------------------------------------AQUI
+		if(counter<=0)exit(1);//errror
+
+		if(FD_ISSET(fd,&rfds)){
+			addrlen=sizeof(addr);
+
+			if((newfd=accept(fd,(struct sockaddr*)&addr,&addrlen))==-1)exit(1);//error
+			switch(state)
+			{
+				case idle: afd=newfd; state=busy; break;
+				case busy: strcpy(buffer,"busy\n");ptr=&buffer[0]; if(write(newfd,ptr,n)<=0)exit(1);//error
+				close(newfd); break;
+			}
+		}
+
+		if(FD_ISSET(afd,&rfds))
+		{
+			if((n=read(afd,buffer,128))!=0)
+			{
+				if(n==-1)exit(1);//error
+				ptr=&buffer[0];
+				if(write(afd,ptr,n)<=0)exit(1);
+			}
+			else{close(afd); state=idle;}//connection closed by peer
+		}
+		
+	}
+	
 	registe(&buffer, argv, fd, addr, "exit");
 	close(fd);
 	exit(0);

@@ -32,7 +32,7 @@ int main(){
 
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(9000);		/* nmero de porto */
-	inet_aton("193.136.131.142", & server_addr.sin_addr);	/* endereo IP */
+	inet_aton("194.210.228.93", & server_addr.sin_addr);	/* endereo IP */
 
 	if( connect(sock_fd, ( struct sockaddr *) &server_addr, sizeof(server_addr)) == -1){
 		perror("connect ");

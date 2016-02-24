@@ -82,17 +82,15 @@ int main(int argc, char**argv){
 	/* ************************* */
 	
 	
-	int port, fd, afd, newfd, ret;
+	int port, fd, ret;
 	struct sockaddr_in addr;
 	/*struct sockaddr_in addr_server;*/
 	struct hostent *h;
 	struct in_addr *a;
 	char *buffer=malloc(128*sizeof(char));
 	fd_set rfds;
-	enum {idle,busy} state;
-	int maxfd, counter;
-	int n, nw;
-	char *ptr;
+	int counter;
+	int nread;
 	char buf[15];
 	socklen_t addrlen;
 	
@@ -137,21 +135,11 @@ int main(int argc, char**argv){
 		exit(1);//error
 	}
 	
-	state=idle;
-	
 	while(1){
 		FD_ZERO(&rfds);
-		FD_SET(fd,&rfds);maxfd=fd;
+		FD_SET(fd,&rfds);
 		FD_SET(fileno(stdin), &rfds);
-		printf("im here\n");
-		if(state==busy){
-			printf("Aqui?\n");
-			FD_SET(afd,&rfds);
-			printf("ou aqui?\n");
-			maxfd=max(maxfd,afd);
-			printf("ou ainda aqui?\n");
-		}
-		counter=select(maxfd + fileno(stdin) + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
+		counter=select(fd + fileno(stdin) + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
 //-------------------------------------------------------------------------------------------------------------------AQUI
 		printf("passou?\n");
 		if(counter<=0){
@@ -176,6 +164,10 @@ int main(int argc, char**argv){
 					registe(&buffer, argv, fd, addr, "exit");
 					close(fd);
 					exit(0);
+				}else{
+					if(strcmp(buf, "list\n")==0){
+						printf("imprime lista\n");
+					}
 				}
 			}
 			
@@ -183,25 +175,10 @@ int main(int argc, char**argv){
 
 		if(FD_ISSET(fd,&rfds)){
 			addrlen=sizeof(addr);
-
-			if((newfd=accept(fd,(struct sockaddr*)&addr,&addrlen))==-1)exit(1);//error
-			switch(state)
-			{
-				case idle: afd=newfd; state=busy; break;
-				case busy: strcpy(buffer,"busy\n");ptr=&buffer[0]; if(write(newfd,ptr,n)<=0)exit(1);//error
-				close(newfd); break;
-			}
-		}
-
-		if(FD_ISSET(afd,&rfds))
-		{
-			if((n=read(afd,buffer,128))!=0)
-			{
-				if(n==-1)exit(1);//error
-				ptr=&buffer[0];
-				if(write(afd,ptr,n)<=0)exit(1);
-			}
-			else{close(afd); state=idle;}//connection closed by peer
+			nread=recvfrom(fd, buffer,128,0,(struct sockaddr*)&addr, &addrlen);
+			if(nread==-1)exit(1);//error
+			ret=sendto(fd, buffer, nread,0,(struct sockaddr*)&addr, addrlen);
+			if(ret==-1)exit(1);
 		}
 		
 	}

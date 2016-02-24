@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <string.h>
+#include <netdb.h>
 
 void empty_buffer(char**buff){
 	*buff[0] = '\0';

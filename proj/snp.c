@@ -14,6 +14,11 @@
 
 #define max(A,B) ((A)>=(B)?(A):(B))
 
+void empty_buffer(char**buff){
+	*buff[0] = '\0';
+	return;
+}
+
 void check_args(int argc, char**argv, int*server_specified){
 	/*check if program was called correctly for mandatory parameters*/
 	if(argc<7){
@@ -41,8 +46,19 @@ void check_args(int argc, char**argv, int*server_specified){
 	return;
 }
 
-void empty_buffer(char**buff){
-	*buff[0] = '\0';
+void validate_user_command(char**buf){
+	char command[6];
+	if(sscanf(*buf, "%s", command)!=1){
+		printf("error in arguments\n");
+	}else{
+		if(strcmp(command, "REG")==0||strcmp(command, "UNR")==0){
+			empty_buffer(&(*buf));
+			strcpy(*buf, "OK");
+		}else{
+			empty_buffer(&(*buf));
+			strcpy(*buf, "NOK");
+		}
+	}
 	return;
 }
 
@@ -181,6 +197,7 @@ int main(int argc, char**argv){
 			addrlen=sizeof(addr);
 			nread=recvfrom(fd, buffer,128,0,(struct sockaddr*)&addr, &addrlen);
 			if(nread==-1)exit(1);//error
+			validate_user_command(&buffer);
 			ret=sendto(fd, buffer, nread,0,(struct sockaddr*)&addr, addrlen);
 			if(ret==-1)exit(1);
 		}

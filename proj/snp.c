@@ -83,7 +83,8 @@ int main(int argc, char**argv){
 	
 	
 	int port, fd, afd, newfd, ret;
-	struct sockaddr_in addr, addr_server;
+	struct sockaddr_in addr;
+	/*struct sockaddr_in addr_server;*/
 	struct hostent *h;
 	struct in_addr *a;
 	char *buffer=malloc(128*sizeof(char));
@@ -92,6 +93,9 @@ int main(int argc, char**argv){
 	int maxfd, counter;
 	int n, nw;
 	char *ptr;
+	char buf[15];
+	socklen_t addrlen;
+	
 	/*empty_buffer(&buffer);*/
 	
 	if(server_specified==1){
@@ -104,7 +108,7 @@ int main(int argc, char**argv){
 		port=58000;
 	}
 	
-	/*send part*/
+	/*register in tejo*/
 	
 	fd=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
 	if(fd==-1) exit(-1);/*error*/
@@ -114,30 +118,68 @@ int main(int argc, char**argv){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(port);
 	
-	memset((void*)&addr_server, (int)'\0', sizeof(addr_server));
-	addr_server.sin_family=AF_INET;
-	addr_server.sin_addr.s_addr=htonl(INADDR_ANY);
-	addr_server.sin_port=htons(9000);
-	
 	registe(&buffer, argv, fd, addr, "register");
+	close(fd);
+	/* ******************************************** */
 	
-	ret=bind(fd, (struct sockaddr*)&addr_server, sizeof(addr_server));
-	if(ret==-1)exit(1);//error
+	/*listen to clients*/
+	fd=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
+	if(fd==-1) exit(-1);/*error*/
+	
+	memset((void*)&addr, (int)'\0', sizeof(addr));
+	addr.sin_family=AF_INET;
+	addr.sin_addr.s_addr=htonl(INADDR_ANY);
+	addr.sin_port=htons(9000);
+	
+	ret=bind(fd, (struct sockaddr*)&addr, sizeof(addr));
+	if(ret==-1){
+		printf("Error in bind\n");
+		exit(1);//error
+	}
 	
 	state=idle;
 	
 	while(1){
 		FD_ZERO(&rfds);
 		FD_SET(fd,&rfds);maxfd=fd;
-		FD_SET(STDIN_FILENO, &rfds);
-		
+		FD_SET(fileno(stdin), &rfds);
+		printf("im here\n");
 		if(state==busy){
+			printf("Aqui?\n");
 			FD_SET(afd,&rfds);
+			printf("ou aqui?\n");
 			maxfd=max(maxfd,afd);
+			printf("ou ainda aqui?\n");
 		}
-		counter=select(maxfd + STDIN_FILENO + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
+		counter=select(maxfd + fileno(stdin) + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
 //-------------------------------------------------------------------------------------------------------------------AQUI
-		if(counter<=0)exit(1);//errror
+		printf("passou?\n");
+		if(counter<=0){
+			printf("Error in select\n");
+			exit(1);//errror
+		}
+		
+		if(FD_ISSET(fileno(stdin), &rfds)){ /* user interface */
+			if(fgets(buf, 15, stdin)){
+				if(strcmp(buf, "exit\n")==0){
+					close(fd);
+					fd=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
+					if(fd==-1) exit(-1);/*error*/
+						
+					memset((void*)&addr, (int)'\0', sizeof(addr));
+					addr.sin_family=AF_INET;
+					addr.sin_addr=*a;
+					addr.sin_port=htons(port);
+						
+						
+					printf("typed: %s\n", buf);
+					registe(&buffer, argv, fd, addr, "exit");
+					close(fd);
+					exit(0);
+				}
+			}
+			
+		}
 
 		if(FD_ISSET(fd,&rfds)){
 			addrlen=sizeof(addr);
@@ -163,8 +205,6 @@ int main(int argc, char**argv){
 		}
 		
 	}
+	/* ********************************************************** */
 	
-	registe(&buffer, argv, fd, addr, "exit");
-	close(fd);
-	exit(0);
 }

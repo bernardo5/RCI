@@ -13,7 +13,13 @@ test3:
 	gcc test3.c -o test
 	
 tcp:
-	gcc tcp.c -o test
+	gcc tcp_.c -o test
+	
+cliente:
+	gcc client-inet-stream.c -o client
+	
+server:
+	gcc udpserver.c -o server
 
 clean:
-	rm -f *.o *.~ test *.gch
+	rm -f *.o *.~ test server client *.gch

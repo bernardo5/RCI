@@ -18,7 +18,7 @@ int main(){
 	char buffer[128];
 	
 	/*get host IP*/
-	if((h=gethostbyname("tejo.tecnico.ulisboa.pt"))==NULL)exit(1);//error
+	if((h=gethostbyname("bernardo-HP-Pavilion-dv6-Notebook-PC"))==NULL)exit(1);//error
 		
 	a=(struct in_addr*)h->h_addr_list[0];
 	
@@ -30,7 +30,7 @@ int main(){
 	memset((void*)&addr, (int)'\0', sizeof(addr));
 	addr.sin_family=AF_INET;
 	addr.sin_addr=*a;
-	addr.sin_port=htons(58000);
+	addr.sin_port=htons(9000);
 	
 	n=sendto(fd, "Hello!\n", 7, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error

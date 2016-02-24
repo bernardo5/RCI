@@ -14,7 +14,7 @@ int main(){
 	struct hostent *h;
 	struct in_addr *a;
 	
-	if((h=gethostbyname("tejo.tecnico.ulisboa.pt"))==NULL)exit(1);//error
+	if((h=gethostbyname("bernardo"))==NULL)exit(1);//error
 	
 	printf("official host name:%s\n", h->h_name);
 		

@@ -51,12 +51,11 @@ void validate_user_command(char**buf){
 	if(sscanf(*buf, "%s", command)!=1){
 		printf("error in arguments\n");
 	}else{
+		printf("command= %s\n", command);
 		if(strcmp(command, "REG")==0||strcmp(command, "UNR")==0){
-			empty_buffer(&(*buf));
-			strcpy(*buf, "OK");
+			strcpy(*buf, "OK\0");
 		}else{
-			empty_buffer(&(*buf));
-			strcpy(*buf, "NOK");
+			strcpy(*buf, "NOK\0");
 		}
 	}
 	return;
@@ -109,6 +108,7 @@ int main(int argc, char**argv){
 	struct hostent *h;
 	struct in_addr *a;
 	char *buffer=malloc(128*sizeof(char));
+	char *buff=malloc(128*sizeof(char));
 	fd_set rfds;
 	int counter;
 	int nread;
@@ -195,10 +195,12 @@ int main(int argc, char**argv){
 
 		if(FD_ISSET(fd,&rfds)){
 			addrlen=sizeof(addr);
-			nread=recvfrom(fd, buffer,128,0,(struct sockaddr*)&addr, &addrlen);
+			nread=recvfrom(fd, buff,128,0,(struct sockaddr*)&addr, &addrlen);
 			if(nread==-1)exit(1);//error
-			validate_user_command(&buffer);
-			ret=sendto(fd, buffer, nread,0,(struct sockaddr*)&addr, addrlen);
+			write(1, "received: ",10);//stdout
+			write(1, buff, nread);
+			validate_user_command(&buff);
+			ret=sendto(fd, buff, 128,0,(struct sockaddr*)&addr, addrlen);
 			if(ret==-1)exit(1);
 		}
 		

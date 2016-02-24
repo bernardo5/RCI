@@ -46,13 +46,32 @@ void check_args(int argc, char**argv, int*server_specified){
 	return;
 }
 
-void validate_user_command(char**buf){
+void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, char**scport){
+	
+	char *delimiter = " .;";
+	char *token;
+	// get the first token 
+	token = strtok(str, delimiter);
+   
+	// walk through other tokens 
+  
+    *name = strtok(NULL, delimiter);
+    *surname=strtok(NULL, delimiter);
+    *ip=strtok(NULL, delimiter);
+    *scport=strtok(NULL, delimiter);
+   
+	return;
+}
+
+void validate_user_command(char**buf, char **name, char**surname, char**ip, char**scport){
 	char command[6];
 	if(sscanf(*buf, "%s", command)!=1){
 		printf("error in arguments\n");
 	}else{
 		printf("command= %s\n", command);
 		if(strcmp(command, "REG")==0||strcmp(command, "UNR")==0){
+			if(strcmp(command, "REG")==0)
+				separate_delimiters_REG(*buf, &(*name), &(*surname), &(*ip), &(*scport));
 			strcpy(*buf, "OK\0");
 		}else{
 			strcpy(*buf, "NOK\0");
@@ -114,6 +133,7 @@ int main(int argc, char**argv){
 	int nread;
 	char buf[15];
 	socklen_t addrlen;
+	char *name, *surname, *ip, *scport;
 	
 	/*empty_buffer(&buffer);*/
 	
@@ -199,7 +219,14 @@ int main(int argc, char**argv){
 			if(nread==-1)exit(1);//error
 			write(1, "received: ",10);//stdout
 			write(1, buff, nread);
-			validate_user_command(&buff);
+			validate_user_command(&buff, &name, &surname, &ip, &scport);
+			printf("%s\n", name);
+  
+			printf("%s\n", surname);
+		 
+			printf("%s\n", ip);
+		  
+			printf("%s\n", scport);
 			ret=sendto(fd, buff, 128,0,(struct sockaddr*)&addr, addrlen);
 			if(ret==-1)exit(1);
 		}

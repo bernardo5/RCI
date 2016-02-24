@@ -32,7 +32,7 @@ int main(){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(9000);
 	
-	n=sendto(fd, "UNR\n", 3, 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG name.surname;ip;scport\n", 26, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
@@ -43,8 +43,8 @@ int main(){
 	if(n==-1) exit(1);//error
 	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
-	write(1, buffer, n);
-	printf("\n");
+	buffer[n]='\0';
+	printf("%s\n", buffer);
 	close(fd);
 		
 	exit(0);

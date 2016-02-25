@@ -30,6 +30,7 @@ void AddUser(user**root, char*name, char*ip, char*scport, char**buf){
 			strcpy((*root)->name, name);
 			strcpy((*root)->ip, ip);
 			strcpy((*root)->scport, scport);
+			strcpy(*buf, "OK\0");
 		}else{
 			if(strncmp(name, (*root)->name, min(strlen(name), strlen((*root)->name)))<0){
 				AddUser(&((*root)->left), name, ip, scport, &(*buf));
@@ -47,9 +48,9 @@ void AddUser(user**root, char*name, char*ip, char*scport, char**buf){
 
 void list(user*root){
 	if(root!=NULL){
-		printf("yupi!!!\n");
+		/*printf("yupi!!!\n");*/
 		list(root->left);
-		printf("%s\n", root->name);
+		printf("%s\t%s\t%s\n", root->name, root->ip, root->scport);
 		list(root->right);
 	}
 	return;
@@ -124,9 +125,8 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, char
 				if(validate_surname(surname_program, *surname, &(*buf))!=0)return;
 				AddUser(&(*root), *name, *ip, *scport,  &(*buf));
 			}
-			strcpy(*buf, "OK\0");
 		}else{
-			strcpy(*buf, "NOK\0");
+			strcpy(*buf, "NOK - invalid command\0");
 		}
 	}
 	return;
@@ -252,15 +252,15 @@ int main(int argc, char**argv){
 					addr.sin_addr=*a;
 					addr.sin_port=htons(port);
 						
-						
-					printf("typed: %s\n", buf);
 					registe(&buffer, argv, fd, addr, "exit");
 					close(fd);
 					exit(0);
 				}else{
 					if(strcmp(buf, "list\n")==0){
 						printf("imprime lista\n");
-						printf("%s %s %s %s %s\n", root->name, root->left->name, root->right->name, root->left->left->name, root->left->left->right->left);
+						/*root->left->left->left->left=NULL;*/
+						printf("name\tip\tscport\n");
+						/*printf("%s\n",root->left->name);*/
 						list(root);
 					}
 				}
@@ -275,13 +275,6 @@ int main(int argc, char**argv){
 			write(1, "received: ",10);//stdout
 			write(1, buff, nread);
 			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2], &root);
-			printf("%s\n", name);
-  
-			printf("%s\n", surname);
-		 
-			printf("%s\n", ip);
-		  
-			printf("%s\n", scport);
 			ret=sendto(fd, buff, 128,0,(struct sockaddr*)&addr, addrlen);
 			if(ret==-1)exit(1);
 		}

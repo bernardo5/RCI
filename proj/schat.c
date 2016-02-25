@@ -102,23 +102,23 @@ int main(){
 	buffer[n]='\0';
 	printf("%s\n", buffer);
 	
-	//n=sendto(fd, "REG ana.teste;ip;scport\n", strlen("REG ana.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
-	//if(n==-1) exit(1);//error
+	n=sendto(fd, "REG ana.teste;ip;scport\n", strlen("REG ana.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
 	
-	//addrlen=sizeof(addr);
-	//printf("going to rcvfrom\n");
-	//n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-	//if(n==-1) exit(1);//error
-	//printf("answer to echo\n");
-	//write(1, "echo: ",6);//stdout
-	//buffer[n]='\0';
-	//printf("%s\n", buffer);
+	addrlen=sizeof(addr);
+	printf("going to rcvfrom\n");
+	n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	buffer[n]='\0';
+	printf("%s\n", buffer);
 	
 	
 	/*n=sendto(fd, "REG aa.teste;ip;scport\n", strlen("REG aa.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
-	if(n==-1) exit(1);//error*/
+	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
 	

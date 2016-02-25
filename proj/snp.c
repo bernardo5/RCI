@@ -33,10 +33,26 @@ void AddUser(user**root, char*name, char*ip, char*scport, char**buf){
 			strcpy(*buf, "OK\0");
 		}else{
 			if(strncmp(name, (*root)->name, min(strlen(name), strlen((*root)->name)))<0){
-				AddUser(&((*root)->left), name, ip, scport, &(*buf));
+				if(((*root)->left)==NULL){
+					((*root)->left)=malloc(sizeof(user));
+					((*root)->left)->left=NULL;
+					((*root)->left)->right=NULL;
+					strcpy(((*root)->left)->name, name);
+					strcpy(((*root)->left)->ip, ip);
+					strcpy(((*root)->left)->scport, scport);
+					strcpy(*buf, "OK\0");
+				}else AddUser(&((*root)->left), name, ip, scport, &(*buf));
 			}else{
 				if(strncmp(name, (*root)->name, min(strlen(name), strlen((*root)->name)))>0){
-					AddUser(&((*root)->right), name, ip, scport, &(*buf));
+					if(((*root)->right)==NULL){
+						((*root)->right)=malloc(sizeof(user));
+						((*root)->right)->left=NULL;
+						((*root)->right)->right=NULL;
+						strcpy(((*root)->right)->name, name);
+						strcpy(((*root)->right)->ip, ip);
+						strcpy(((*root)->right)->scport, scport);
+						strcpy(*buf, "OK\0");
+					}else AddUser(&((*root)->right), name, ip, scport, &(*buf));
 				}else{ /*already exists*/
 					printf("invalid username\n");
 					strcpy(*buf, "NOK - Name already exists!\0");
@@ -258,7 +274,7 @@ int main(int argc, char**argv){
 				}else{
 					if(strcmp(buf, "list\n")==0){
 						printf("imprime lista\n");
-						/*root->left->left->left->left=NULL;*/
+						root->left->left->left->left=NULL;
 						printf("name\tip\tscport\n");
 						/*printf("%s\n",root->left->name);*/
 						list(root);

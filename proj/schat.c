@@ -32,7 +32,7 @@ int main(){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(9000);
 	
-	n=sendto(fd, "REG name.teste;ip;scport\n", strlen("REG name.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG teste.teste;ip;scport\n", strlen("REG teste.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
@@ -45,6 +45,91 @@ int main(){
 	write(1, "echo: ",6);//stdout
 	buffer[n]='\0';
 	printf("%s\n", buffer);
+	
+	n=sendto(fd, "REG piça.teste;ip;scport\n", strlen("REG piça.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) exit(1);//error
+	
+	/*receive echo part*/
+	
+	addrlen=sizeof(addr);
+	printf("going to rcvfrom\n");
+	n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	buffer[n]='\0';
+	printf("%s\n", buffer);
+	
+	n=sendto(fd, "REG zorro.teste;ip;scport\n", strlen("REG zorro.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) exit(1);//error
+	
+	/*receive echo part*/
+	
+	addrlen=sizeof(addr);
+	printf("going to rcvfrom\n");
+	n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	buffer[n]='\0';
+	printf("%s\n", buffer);
+	
+	n=sendto(fd, "REG bernardo.teste;ip;scport\n", strlen("REG bernardo.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) exit(1);//error
+	
+	/*receive echo part*/
+	
+	addrlen=sizeof(addr);
+	printf("going to rcvfrom\n");
+	n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	buffer[n]='\0';
+	printf("%s\n", buffer);
+	
+	n=sendto(fd, "REG diogo.teste;ip;scport\n", strlen("REG diogo.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) exit(1);//error
+	
+	/*receive echo part*/
+	
+	addrlen=sizeof(addr);
+	printf("going to rcvfrom\n");
+	n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	buffer[n]='\0';
+	printf("%s\n", buffer);
+	
+	n=sendto(fd, "REG ana.teste;ip;scport\n", strlen("REG ana.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) exit(1);//error
+	
+	/*receive echo part*/
+	
+	addrlen=sizeof(addr);
+	printf("going to rcvfrom\n");
+	n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	buffer[n]='\0';
+	printf("%s\n", buffer);
+	
+	
+	/*n=sendto(fd, "REG aa.teste;ip;scport\n", strlen("REG aa.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) exit(1);//error*/
+	
+	/*receive echo part*/
+	
+	/*addrlen=sizeof(addr);
+	printf("going to rcvfrom\n");
+	n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	buffer[n]='\0';
+	printf("%s\n", buffer);*/
 	close(fd);
 		
 	exit(0);

@@ -12,7 +12,7 @@
 #include <sys/un.h>
 #include <sys/time.h>
 
-#define max(A,B) ((A)>=(B)?(A):(B))
+#define min(A,B) ((A)<=(B)?(A):(B))
 
 typedef struct _user{
 	char name[30];
@@ -21,6 +21,39 @@ typedef struct _user{
 	struct _user*left;
 	struct _user*right;
 }user;
+
+void AddUser(user**root, char*name, char*ip, char*scport, char**buf){
+		if((*root)==NULL){
+			(*root)=malloc(sizeof(user));
+			(*root)->left=NULL;
+			(*root)->right=NULL;
+			strcpy((*root)->name, name);
+			strcpy((*root)->ip, ip);
+			strcpy((*root)->scport, scport);
+		}else{
+			if(strncmp(name, (*root)->name, min(strlen(name), strlen((*root)->name)))<0){
+				AddUser(&((*root)->left), name, ip, scport, &(*buf));
+			}else{
+				if(strncmp(name, (*root)->name, min(strlen(name), strlen((*root)->name)))>0){
+					AddUser(&((*root)->right), name, ip, scport, &(*buf));
+				}else{ /*already exists*/
+					printf("invalid username\n");
+					strcpy(*buf, "NOK - Name already exists!\0");
+				}
+			}
+		}
+	return;
+}
+
+void list(user*root){
+	if(root!=NULL){
+		printf("yupi!!!\n");
+		list(root->left);
+		printf("%s\n", root->name);
+		list(root->right);
+	}
+	return;
+}
 
 void empty_buffer(char**buff){
 	*buff[0] = '\0';
@@ -79,7 +112,7 @@ int validate_surname(char*surname_program, char*surname, char**buf){
 	return strcmp(surname_program, surname);
 }
 
-void validate_user_command(char**buf, char **name, char**surname, char**ip, char**scport, char*surname_program){
+void validate_user_command(char**buf, char **name, char**surname, char**ip, char**scport, char*surname_program, user**root){
 	char command[6];
 	if(sscanf(*buf, "%s", command)!=1){
 		printf("error in arguments\n");
@@ -89,7 +122,7 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, char
 			if(strcmp(command, "REG")==0){
 				separate_delimiters_REG(*buf, &(*name), &(*surname), &(*ip), &(*scport));
 				if(validate_surname(surname_program, *surname, &(*buf))!=0)return;
-				
+				AddUser(&(*root), *name, *ip, *scport,  &(*buf));
 			}
 			strcpy(*buf, "OK\0");
 		}else{
@@ -227,6 +260,8 @@ int main(int argc, char**argv){
 				}else{
 					if(strcmp(buf, "list\n")==0){
 						printf("imprime lista\n");
+						printf("%s %s %s %s %s\n", root->name, root->left->name, root->right->name, root->left->left->name, root->left->left->right->left);
+						list(root);
 					}
 				}
 			}
@@ -239,7 +274,7 @@ int main(int argc, char**argv){
 			if(nread==-1)exit(1);//error
 			write(1, "received: ",10);//stdout
 			write(1, buff, nread);
-			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2]);
+			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2], &root);
 			printf("%s\n", name);
   
 			printf("%s\n", surname);

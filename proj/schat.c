@@ -46,7 +46,7 @@ int main(){
 	buffer[n]='\0';
 	printf("%s\n", buffer);
 	
-	n=sendto(fd, "REG piça.teste;ip;scport\n", strlen("REG piça.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG pedro.teste;ip;scport\n", strlen("REG pedro.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
@@ -102,7 +102,7 @@ int main(){
 	buffer[n]='\0';
 	printf("%s\n", buffer);
 	
-	n=sendto(fd, "REG ana.teste;ip;scport\n", strlen("REG ana.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG anacleto.teste;ip;scport\n", strlen("REG anacleto.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
@@ -117,7 +117,7 @@ int main(){
 	printf("%s\n", buffer);
 	
 	
-	/*n=sendto(fd, "REG aa.teste;ip;scport\n", strlen("REG aa.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	/*n=sendto(fd, "REG a.teste;ip;scport\n", strlen("REG a.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/

@@ -12,8 +12,6 @@
 #include <sys/un.h>
 #include <sys/time.h>
 
-#define min(A,B) ((A)<=(B)?(A):(B))
-
 typedef struct _user{
 	char name[30];
 	char ip[15];
@@ -21,6 +19,11 @@ typedef struct _user{
 	struct _user*left;
 	struct _user*right;
 }user;
+
+int min(int a, int b){
+	if(a<b) return a;
+	else return b;	
+}
 
 void AddUser(user**root, char*name, char*ip, char*scport, char**buf){
 		if((*root)==NULL){
@@ -274,9 +277,8 @@ int main(int argc, char**argv){
 				}else{
 					if(strcmp(buf, "list\n")==0){
 						printf("imprime lista\n");
-						root->left->left->left->left=NULL;
+						/*root->left->left->left->left=NULL;*/
 						printf("name\tip\tscport\n");
-						/*printf("%s\n",root->left->name);*/
 						list(root);
 					}
 				}

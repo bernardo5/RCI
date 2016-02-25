@@ -32,7 +32,7 @@ int main(){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(9000);
 	
-	n=sendto(fd, "REG name.surname;ip;scport\n", 26, 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG name.teste;ip;scport\n", strlen("REG name.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/

@@ -14,6 +14,14 @@
 
 #define max(A,B) ((A)>=(B)?(A):(B))
 
+typedef struct _user{
+	char name[30];
+	char ip[15];
+	char scport[6];
+	struct _user*left;
+	struct _user*right;
+}user;
+
 void empty_buffer(char**buff){
 	*buff[0] = '\0';
 	return;
@@ -63,15 +71,26 @@ void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, ch
 	return;
 }
 
-void validate_user_command(char**buf, char **name, char**surname, char**ip, char**scport){
+int validate_surname(char*surname_program, char*surname, char**buf){
+	if(strcmp(surname_program, surname)!=0){
+		printf("invalid surname\n");
+		strcpy(*buf, "NOK - Invalid Surname for this server\0");
+	}
+	return strcmp(surname_program, surname);
+}
+
+void validate_user_command(char**buf, char **name, char**surname, char**ip, char**scport, char*surname_program){
 	char command[6];
 	if(sscanf(*buf, "%s", command)!=1){
 		printf("error in arguments\n");
 	}else{
 		printf("command= %s\n", command);
 		if(strcmp(command, "REG")==0||strcmp(command, "UNR")==0){
-			if(strcmp(command, "REG")==0)
+			if(strcmp(command, "REG")==0){
 				separate_delimiters_REG(*buf, &(*name), &(*surname), &(*ip), &(*scport));
+				if(validate_surname(surname_program, *surname, &(*buf))!=0)return;
+				
+			}
 			strcpy(*buf, "OK\0");
 		}else{
 			strcpy(*buf, "NOK\0");
@@ -134,6 +153,7 @@ int main(int argc, char**argv){
 	char buf[15];
 	socklen_t addrlen;
 	char *name, *surname, *ip, *scport;
+	user*root=NULL; /*pointer to binary tree to store users*/
 	
 	/*empty_buffer(&buffer);*/
 	
@@ -219,7 +239,7 @@ int main(int argc, char**argv){
 			if(nread==-1)exit(1);//error
 			write(1, "received: ",10);//stdout
 			write(1, buff, nread);
-			validate_user_command(&buff, &name, &surname, &ip, &scport);
+			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2]);
 			printf("%s\n", name);
   
 			printf("%s\n", surname);

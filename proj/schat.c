@@ -18,7 +18,7 @@ int main(){
 	char buffer[128];
 	
 	/*get host IP*/
-	if((h=gethostbyname("bernardo-HP-Pavilion-dv6-Notebook-PC"))==NULL)exit(1);//error
+	if((h=gethostbyname("diogo"))==NULL)exit(1);//error
 		
 	a=(struct in_addr*)h->h_addr_list[0];
 	

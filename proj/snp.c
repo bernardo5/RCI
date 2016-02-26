@@ -20,21 +20,36 @@ typedef struct _user{
 	struct _user*right;
 }user;
 
+
+void FreeUser(user*name){
+	free(name);
+	return;
+}
+
 void DeleteUser(user**root, char*name){
 	user*auxiliar=(*root);
 	user*successor, *parent;
+	
 	/*find user*/
+	parent=auxiliar;
 	if(strcmp(auxiliar->name, name)!=0){
 		while(strcmp(auxiliar->name, name)!=0){
 			if(strcmp(name, auxiliar->name)<0){
+				parent=auxiliar;
 				auxiliar=auxiliar->left;
-			}else if(strcmp(name, auxiliar->name)>0) auxiliar=auxiliar->right;
+				printf("ana? %s\n", auxiliar->name);
+			}else if(strcmp(name, auxiliar->name)>0){
+				 parent=auxiliar;
+				 auxiliar=auxiliar->right;
+			 }
 		}
 	}
+	printf("ana?? %s %s\n", auxiliar->left->name, auxiliar->right->name);
 	/* **************************************** */
 	if(((auxiliar->left)!=NULL)&&((auxiliar->right)!=NULL)){
 		successor=auxiliar->right;
-		parent=successor;
+		//printf("%s\n", successor);
+		parent=successor;	
 		if(successor->left!=NULL) successor=successor->left;
 		while((successor->left)!=NULL){
 			 successor=successor->left;
@@ -43,23 +58,32 @@ void DeleteUser(user**root, char*name){
 		strcpy(auxiliar->name, successor->name);
 		strcpy(auxiliar->ip, successor->ip);
 		auxiliar->scport=auxiliar->scport;
-		auxiliar=successor;		
-	}
+		auxiliar=successor;
+		printf("%s\n", auxiliar->name);			
+	}/*else{
+		FreeUser(auxiliar);
+		return;
+	}*/
 	//auxiliar now points to the node with max of one child to delete
 	user*appropchild;
 	
 	if((auxiliar->left)!=NULL){
 		appropchild=auxiliar->left;
 	}else{
-		appropchild=auxiliar->right;	
-		printf("%s %s\n", auxiliar->right, appropchild);	
+		printf("ana é aqui??\n");	
+		appropchild=auxiliar->right;
+		printf("Aqui %s\n", appropchild->name);		
+		printf("ana??? %s %s\n", auxiliar->right->name, appropchild->name);
 	}
+	printf("ana?????? %s %s\n", auxiliar->right->name, appropchild->name);
+	
 	if(parent==NULL){
 		*root=appropchild;
 	}else if((parent->left)==auxiliar){
 		parent->left=appropchild;
 	}else{
 		parent->right=appropchild;
+		printf("parent->right: %s\n", parent->right->name);
 	}
 	return;
 }
@@ -339,7 +363,9 @@ int main(int argc, char**argv){
 						printf("name\t\tsurname\t\tip\t\tscport\n");
 						list(root, argv[2]);
 						printf("\n\n\n\n\n\n\n\n\n");
-						DeleteUser(&root, "teste");
+						DeleteUser(&root, "diogo");
+						list(root, argv[2]);
+						printf("\n\n\n\n\n\n\n\n\n");
 						list(root, argv[2]);
 					}
 				}

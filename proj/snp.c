@@ -25,32 +25,43 @@ int min(int a, int b){
 	else return b;	
 }
 
+void put_to_null(user**root, char*name){
+	user*auxiliar=(*root);
+	if(strcmp(auxiliar->name, name)==0){
+		auxiliar->left=NULL;
+		auxiliar->right=NULL;
+	}else{
+		while(strcmp(auxiliar->name, name)!=0){
+			if(strcmp(name, auxiliar->name)<0){
+				auxiliar=auxiliar->left;
+			}else if(strcmp(name, auxiliar->name)>0) auxiliar=auxiliar->right;
+		}
+		auxiliar->left=NULL;
+		auxiliar->right=NULL;
+	}
+	return;
+}
+
 void AddUser(user**root, char*name, char*ip, char*scport, char**buf){
 		if((*root)==NULL){
 			(*root)=malloc(sizeof(user));
-			(*root)->left=NULL;
-			(*root)->right=NULL;
 			strcpy((*root)->name, name);
 			strcpy((*root)->ip, ip);
 			strcpy((*root)->scport, scport);
 			strcpy(*buf, "OK\0");
 		}else{
-			if(strncmp(name, (*root)->name, min(strlen(name), strlen((*root)->name)))<0){
+			if(strcmp(name, (*root)->name)<0){
 				if(((*root)->left)==NULL){
 					((*root)->left)=malloc(sizeof(user));
-					((*root)->left)->left=NULL;
-					((*root)->left)->right=NULL;
 					strcpy(((*root)->left)->name, name);
 					strcpy(((*root)->left)->ip, ip);
 					strcpy(((*root)->left)->scport, scport);
 					strcpy(*buf, "OK\0");
 				}else AddUser(&((*root)->left), name, ip, scport, &(*buf));
 			}else{
-				if(strncmp(name, (*root)->name, min(strlen(name), strlen((*root)->name)))>0){
+				if(strcmp(name, (*root)->name)>0){
 					if(((*root)->right)==NULL){
 						((*root)->right)=malloc(sizeof(user));
-						((*root)->right)->left=NULL;
-						((*root)->right)->right=NULL;
 						strcpy(((*root)->right)->name, name);
 						strcpy(((*root)->right)->ip, ip);
 						strcpy(((*root)->right)->scport, scport);
@@ -143,6 +154,7 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, char
 				separate_delimiters_REG(*buf, &(*name), &(*surname), &(*ip), &(*scport));
 				if(validate_surname(surname_program, *surname, &(*buf))!=0)return;
 				AddUser(&(*root), *name, *ip, *scport,  &(*buf));
+				put_to_null(&(*root), (*name));
 			}
 		}else{
 			strcpy(*buf, "NOK - invalid command\0");

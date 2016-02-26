@@ -32,7 +32,7 @@ int main(){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(9000);
 	
-	n=sendto(fd, "REG teste.teste;ip;scport\n", strlen("REG teste.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG teste.teste;ip;80\n", strlen("REG teste.teste;ip;80\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
@@ -46,7 +46,7 @@ int main(){
 	buffer[n]='\0';
 	printf("%s\n", buffer);
 	
-	n=sendto(fd, "REG pedro.teste;ip;scport\n", strlen("REG pedro.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG pedro.teste;ip;80\n", strlen("REG pedro.teste;ip;80\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
@@ -60,7 +60,7 @@ int main(){
 	buffer[n]='\0';
 	printf("%s\n", buffer);
 	
-	n=sendto(fd, "REG zorro.teste;ip;scport\n", strlen("REG zorro.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG zorro.teste;ip;80\n", strlen("REG zorro.teste;ip;80\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
@@ -74,7 +74,7 @@ int main(){
 	buffer[n]='\0';
 	printf("%s\n", buffer);
 	
-	n=sendto(fd, "REG bernardo.teste;ip;scport\n", strlen("REG bernardo.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG bernardo.teste;ip;80\n", strlen("REG bernardo.teste;ip;80\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
@@ -88,7 +88,7 @@ int main(){
 	buffer[n]='\0';
 	printf("%s\n", buffer);
 	
-	n=sendto(fd, "REG diogo.teste;ip;scport\n", strlen("REG diogo.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG diogo.teste;ip;80\n", strlen("REG diogo.teste;ip;80\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/
@@ -102,7 +102,7 @@ int main(){
 	buffer[n]='\0';
 	printf("%s\n", buffer);
 	
-	n=sendto(fd, "REG ze.teste;ip;scport\n", strlen("REG ze.teste;ip;scport\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG ze.teste;ip;80\n", strlen("REG ze.teste;ip;80\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/

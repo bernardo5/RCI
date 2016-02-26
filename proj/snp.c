@@ -15,7 +15,7 @@
 typedef struct _user{
 	char name[30];
 	char ip[15];
-	char scport[6];
+	int scport;
 	struct _user*left;
 	struct _user*right;
 }user;
@@ -42,12 +42,12 @@ void put_to_null(user**root, char*name){
 	return;
 }
 
-void AddUser(user**root, char*name, char*ip, char*scport, char**buf){
+void AddUser(user**root, char*name, char*ip, int scport, char**buf){
 		if((*root)==NULL){
 			(*root)=malloc(sizeof(user));
 			strcpy((*root)->name, name);
 			strcpy((*root)->ip, ip);
-			strcpy((*root)->scport, scport);
+			(*root)->scport=scport;
 			strcpy(*buf, "OK\0");
 		}else{
 			if(strcmp(name, (*root)->name)<0){
@@ -55,7 +55,7 @@ void AddUser(user**root, char*name, char*ip, char*scport, char**buf){
 					((*root)->left)=malloc(sizeof(user));
 					strcpy(((*root)->left)->name, name);
 					strcpy(((*root)->left)->ip, ip);
-					strcpy(((*root)->left)->scport, scport);
+					(*root)->left->scport=scport;
 					strcpy(*buf, "OK\0");
 				}else AddUser(&((*root)->left), name, ip, scport, &(*buf));
 			}else{
@@ -64,7 +64,7 @@ void AddUser(user**root, char*name, char*ip, char*scport, char**buf){
 						((*root)->right)=malloc(sizeof(user));
 						strcpy(((*root)->right)->name, name);
 						strcpy(((*root)->right)->ip, ip);
-						strcpy(((*root)->right)->scport, scport);
+						(*root)->right->scport=scport;
 						strcpy(*buf, "OK\0");
 					}else AddUser(&((*root)->right), name, ip, scport, &(*buf));
 				}else{ /*already exists*/
@@ -80,7 +80,7 @@ void list(user*root){
 	if(root!=NULL){
 		/*printf("yupi!!!\n");*/
 		list(root->left);
-		printf("%s\t%s\t%s\n", root->name, root->ip, root->scport);
+		printf("%s\t%s\t%d\n", root->name, root->ip, root->scport);
 		list(root->right);
 	}
 	return;
@@ -118,8 +118,8 @@ void check_args(int argc, char**argv, int*server_specified){
 	return;
 }
 
-void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, char**scport){
-	
+void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, int* scport){
+	char*port;
 	char *delimiter = " .;";
 	char *token;
 	// get the first token 
@@ -130,7 +130,8 @@ void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, ch
     *name = strtok(NULL, delimiter);
     *surname=strtok(NULL, delimiter);
     *ip=strtok(NULL, delimiter);
-    *scport=strtok(NULL, delimiter);
+    port=strtok(NULL, delimiter);
+    sscanf(port, "%d", scport);
    
 	return;
 }
@@ -143,7 +144,7 @@ int validate_surname(char*surname_program, char*surname, char**buf){
 	return strcmp(surname_program, surname);
 }
 
-void validate_user_command(char**buf, char **name, char**surname, char**ip, char**scport, char*surname_program, user**root){
+void validate_user_command(char**buf, char **name, char**surname, char**ip, int*scport, char*surname_program, user**root){
 	char command[6];
 	if(sscanf(*buf, "%s", command)!=1){
 		printf("error in arguments\n");
@@ -216,7 +217,8 @@ int main(int argc, char**argv){
 	int nread;
 	char buf[15];
 	socklen_t addrlen;
-	char *name, *surname, *ip, *scport;
+	char *name, *surname, *ip;
+	int scport;
 	user*root=NULL; /*pointer to binary tree to store users*/
 	
 	/*empty_buffer(&buffer);*/
@@ -305,6 +307,7 @@ int main(int argc, char**argv){
 			write(1, "received: ",10);//stdout
 			write(1, buff, nread);
 			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2], &root);
+			printf("%d\n", scport);
 			ret=sendto(fd, buff, 128,0,(struct sockaddr*)&addr, addrlen);
 			if(ret==-1)exit(1);
 		}

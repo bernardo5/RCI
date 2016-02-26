@@ -21,11 +21,6 @@ typedef struct _user{
 }user;
 
 
-void FreeUser(user*name){
-	free(name);
-	return;
-}
-
 void DeleteUser(user**root, char*name){
 	user*auxiliar=(*root);
 	user*successor, *parent;
@@ -47,20 +42,18 @@ void DeleteUser(user**root, char*name){
 	if(((auxiliar->left)!=NULL)&&((auxiliar->right)!=NULL)){
 		successor=auxiliar->right;
 		//printf("%s\n", successor);
-		parent=successor;	
-		if(successor->left!=NULL) successor=successor->left;
+		/*parent=successor;	*/
+		parent=auxiliar;
+		/*if(successor->left!=NULL) successor=successor->left;*/
 		while((successor->left)!=NULL){
+			 parent=successor;
 			 successor=successor->left;
-			 parent=parent->left;
 		 }
 		strcpy(auxiliar->name, successor->name);
 		strcpy(auxiliar->ip, successor->ip);
 		auxiliar->scport=auxiliar->scport;
 		auxiliar=successor;			
-	}/*else{
-		FreeUser(auxiliar);
-		return;
-	}*/
+	}
 	//auxiliar now points to the node with max of one child to delete
 	user*appropchild;
 	
@@ -355,7 +348,7 @@ int main(int argc, char**argv){
 						printf("name\t\tsurname\t\tip\t\tscport\n");
 						list(root, argv[2]);
 						printf("\n\n\n\n\n\n\n\n\n");
-						DeleteUser(&root, "teste");
+						DeleteUser(&root, "bernardo");
 						list(root, argv[2]);
 						printf("\n\n\n\n\n\n\n\n\n");
 						list(root, argv[2]);

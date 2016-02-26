@@ -102,7 +102,7 @@ int main(){
 	buffer[n]='\0';
 	printf("%s\n", buffer);
 	
-	n=sendto(fd, "REG ze.teste;ip;80\n", strlen("REG ze.teste;ip;80\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
+	n=sendto(fd, "REG ze.costa;ip;80\n", strlen("REG ze.costa;ip;80\n"), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	
 	/*receive echo part*/

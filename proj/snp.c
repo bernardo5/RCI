@@ -76,12 +76,12 @@ void AddUser(user**root, char*name, char*ip, int scport, char**buf){
 	return;
 }
 
-void list(user*root){
+void list(user*root, char*surname){
 	if(root!=NULL){
 		/*printf("yupi!!!\n");*/
-		list(root->left);
-		printf("%s\t%s\t%d\n", root->name, root->ip, root->scport);
-		list(root->right);
+		list(root->left, surname);
+		printf("%s\t\t%s\t\t%s\t\t%d\n", root->name, surname, root->ip, root->scport);
+		list(root->right, surname);
 	}
 	return;
 }
@@ -292,8 +292,8 @@ int main(int argc, char**argv){
 					if(strcmp(buf, "list\n")==0){
 						printf("imprime lista\n");
 						/*root->left->left->left->left=NULL;*/
-						printf("name\tip\tscport\n");
-						list(root);
+						printf("name\t\tsurname\t\tip\t\tscport\n");
+						list(root, argv[2]);
 					}
 				}
 			}

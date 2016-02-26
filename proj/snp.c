@@ -20,6 +20,50 @@ typedef struct _user{
 	struct _user*right;
 }user;
 
+void DeleteUser(user**root, char*name){
+	user*auxiliar=(*root);
+	user*successor, *aux_parent, *parent;
+	/*find user*/
+	if(strcmp(auxiliar->name, name)!=0){
+		while(strcmp(auxiliar->name, name)!=0){
+			if(strcmp(name, auxiliar->name)<0){
+				auxiliar=auxiliar->left;
+			}else if(strcmp(name, auxiliar->name)>0) auxiliar=auxiliar->right;
+		}
+	}
+	/* **************************************** */
+	if(((auxiliar->left)!=NULL)&&((auxiliar->right)!=NULL)){
+		successor=auxiliar->right;
+		aux_parent=successor;
+		if(successor->left!=NULL) successor=successor->left;
+		while((successor->left)!=NULL){
+			 successor=successor->left;
+			 aux_parent=aux_parent->left;
+		 }
+		strcpy(auxiliar->name, successor->name);
+		strcpy(auxiliar->ip, successor->ip);
+		auxiliar->scport=auxiliar->scport;
+		auxiliar=successor;
+		parent=aux_parent;		
+	}
+	//auxiliar now points to the node with max of one child to delete
+	user*appropchild;
+	
+	if((auxiliar->left)!=NULL){
+		appropchild=auxiliar->left;
+	}else{
+		appropchild=auxiliar->right;		
+	}
+	if(parent==NULL){
+		*root=appropchild;
+	}else if((parent->left)==auxiliar){
+		parent->left=appropchild;
+	}else{
+		parent->right=appropchild;
+	}
+	return;
+}
+
 int min(int a, int b){
 	if(a<b) return a;
 	else return b;	
@@ -293,6 +337,12 @@ int main(int argc, char**argv){
 						printf("imprime lista\n");
 						/*root->left->left->left->left=NULL;*/
 						printf("name\t\tsurname\t\tip\t\tscport\n");
+						list(root, argv[2]);
+						printf("\n\n\n\n\n\n\n\n\n");
+						DeleteUser(&root, "bernardo");
+						list(root, argv[2]);
+						printf("\n\n\n\n\n\n\n\n\n");
+						DeleteUser(&root, "teste");
 						list(root, argv[2]);
 					}
 				}

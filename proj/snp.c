@@ -37,14 +37,12 @@ void DeleteUser(user**root, char*name){
 			if(strcmp(name, auxiliar->name)<0){
 				parent=auxiliar;
 				auxiliar=auxiliar->left;
-				printf("ana? %s\n", auxiliar->name);
 			}else if(strcmp(name, auxiliar->name)>0){
 				 parent=auxiliar;
 				 auxiliar=auxiliar->right;
 			 }
 		}
 	}
-	printf("ana?? %s %s\n", auxiliar->left->name, auxiliar->right->name);
 	/* **************************************** */
 	if(((auxiliar->left)!=NULL)&&((auxiliar->right)!=NULL)){
 		successor=auxiliar->right;
@@ -58,8 +56,7 @@ void DeleteUser(user**root, char*name){
 		strcpy(auxiliar->name, successor->name);
 		strcpy(auxiliar->ip, successor->ip);
 		auxiliar->scport=auxiliar->scport;
-		auxiliar=successor;
-		printf("%s\n", auxiliar->name);			
+		auxiliar=successor;			
 	}/*else{
 		FreeUser(auxiliar);
 		return;
@@ -70,12 +67,8 @@ void DeleteUser(user**root, char*name){
 	if((auxiliar->left)!=NULL){
 		appropchild=auxiliar->left;
 	}else{
-		printf("ana é aqui??\n");	
 		appropchild=auxiliar->right;
-		printf("Aqui %s\n", appropchild->name);		
-		printf("ana??? %s %s\n", auxiliar->right->name, appropchild->name);
 	}
-	printf("ana?????? %s %s\n", auxiliar->right->name, appropchild->name);
 	
 	if(parent==NULL){
 		*root=appropchild;
@@ -83,7 +76,6 @@ void DeleteUser(user**root, char*name){
 		parent->left=appropchild;
 	}else{
 		parent->right=appropchild;
-		printf("parent->right: %s\n", parent->right->name);
 	}
 	return;
 }
@@ -363,7 +355,7 @@ int main(int argc, char**argv){
 						printf("name\t\tsurname\t\tip\t\tscport\n");
 						list(root, argv[2]);
 						printf("\n\n\n\n\n\n\n\n\n");
-						DeleteUser(&root, "diogo");
+						DeleteUser(&root, "teste");
 						list(root, argv[2]);
 						printf("\n\n\n\n\n\n\n\n\n");
 						list(root, argv[2]);

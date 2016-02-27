@@ -47,7 +47,7 @@ int find_user(user*root, char*name, char**buf){
 				  }
 		}
 	}else{
-		 strcpy(*buf, "NOK - Dont hack me bitch\0");
+		 strcpy(*buf, "NOK - Dont hack me. Thank you\0");
 		 return 0; /* name does not exist */
 	}
 }

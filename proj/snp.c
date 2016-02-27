@@ -66,6 +66,19 @@ void DeleteUser(user**root, char*name, char**buf){
 		}
 	}
 	/* **************************************** */
+	
+	if((strcmp(auxiliar->name, (*root)->name)==0)&&(!(((auxiliar->left)!=NULL)&&((auxiliar->right)!=NULL)))){
+		if((auxiliar->left==NULL)&&(auxiliar->right==NULL)){
+			 (*root)=NULL;
+		 }else{
+			if(auxiliar->left==NULL){
+				(*root)=auxiliar->right;
+			}else (*root)=auxiliar->left;
+		 }
+		strcpy(*buf, "OK\0");
+		return;
+	}
+	
 	if(((auxiliar->left)!=NULL)&&((auxiliar->right)!=NULL)){
 		successor=auxiliar->right;
 		//printf("%s\n", successor);

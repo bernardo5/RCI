@@ -219,6 +219,7 @@ void check_args(int argc, char**argv, int*server_specified){
 
 void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, int* scport){
 	char*port;
+	char *ip1, *ip2, *ip3, *ip4;
 	char *delimiter = " .;";
 	char *token;
 	// get the first token 
@@ -228,7 +229,11 @@ void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, in
   
     *name = strtok(NULL, delimiter);
     *surname=strtok(NULL, delimiter);
-    *ip=strtok(NULL, delimiter);
+    ip1=strtok(NULL, delimiter);
+    ip2=strtok(NULL, delimiter);
+    ip3=strtok(NULL, delimiter);
+    ip4=strtok(NULL, delimiter);
+    sprintf(*ip, "%s%s%s%s%s%s%s", ip1, ".", ip2, ".", ip3, ".", ip4);
     port=strtok(NULL, delimiter);
     sscanf(port, "%d", scport);
    
@@ -429,7 +434,6 @@ int main(int argc, char**argv){
 			write(1, "received: ",10);//stdout
 			write(1, buff, nread);
 			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2], &root);
-			printf("%d\n", scport);
 			ret=sendto(fd, buff, 128,0,(struct sockaddr*)&addr, addrlen);
 			if(ret==-1)exit(1);
 		}

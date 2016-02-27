@@ -20,8 +20,35 @@ typedef struct _user{
 	struct _user*right;
 }user;
 
+int find_user(user*root, char*name, char**buf){
+	user*auxiliar=root;
+	
+	if(strcmp(auxiliar->name, name)==0){
+		return 1;
+	}else{
+		if(strcmp(name, auxiliar->name)<0){
+				if((auxiliar->left)==NULL){
+				     strcpy(*buf, "NOK - Invalid name in this server\0");
+					 return 0; /* name does not exist */
+				 }
+				return find_user(auxiliar->left, name, &(*buf));
+		}else if(strcmp(name, auxiliar->name)>0){
+				 if((auxiliar->right)==NULL){
+				     strcpy(*buf, "NOK - Invalid name in this server\0");
+					  return 0; /* name does not exist */
+				  }
+				return find_user(auxiliar->right, name, &(*buf));
+			  }else{
+				  printf("invalid name\n");
+				  strcpy(*buf, "NOK - Invalid name in this server\0");
+				 return 0; 
+			  }
+	}
 
-void DeleteUser(user**root, char*name){
+}
+
+
+void DeleteUser(user**root, char*name, char**buf){
 	user*auxiliar=(*root);
 	user*successor, *parent;
 	
@@ -70,6 +97,7 @@ void DeleteUser(user**root, char*name){
 	}else{
 		parent->right=appropchild;
 	}
+	strcpy(*buf, "OK\0");
 	return;
 }
 
@@ -189,6 +217,23 @@ void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, in
 	return;
 }
 
+void separate_delimiters_UNR(char *str, char **name, char**surname){
+	char *delimiter = " .";
+	char *token;
+	//char*surname_aux;
+	// get the first token 
+	token = strtok(str, delimiter);
+   
+	// walk through other tokens 
+  
+    *name = strtok(NULL, delimiter);
+    *surname=strtok(NULL, delimiter);
+    sscanf(*surname, "%s", *surname);
+   
+	return;
+	
+}
+
 int validate_surname(char*surname_program, char*surname, char**buf){
 	if(strcmp(surname_program, surname)!=0){
 		printf("invalid surname\n");
@@ -204,12 +249,17 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 	}else{
 		printf("command= %s\n", command);
 		if(strcmp(command, "REG")==0||strcmp(command, "UNR")==0){
-			if(strcmp(command, "REG")==0){
+			if(strcmp(command, "REG")==0){ /* registo de um user */
 				separate_delimiters_REG(*buf, &(*name), &(*surname), &(*ip), &(*scport));
 				if(validate_surname(surname_program, *surname, &(*buf))!=0)return;
 				AddUser(&(*root), *name, *ip, *scport,  &(*buf));
 				put_to_null(&(*root), (*name));
-			}
+			}else if(strcmp(command, "UNR")==0){ /* apagar a sessao de um user */
+						separate_delimiters_UNR(*buf, &(*name), &(*surname));
+						printf("%s %s\n", *name, *surname);
+						if(validate_surname(surname_program, *surname, &(*buf))!=0)	return;
+						if(find_user((*root), *name, &(*buf))) DeleteUser(&(*root), *name, &(*buf));
+				  }
 		}else{
 			strcpy(*buf, "NOK - invalid command\0");
 		}
@@ -343,14 +393,7 @@ int main(int argc, char**argv){
 					exit(0);
 				}else{
 					if(strcmp(buf, "list\n")==0){
-						printf("imprime lista\n");
-						/*root->left->left->left->left=NULL;*/
 						printf("name\t\tsurname\t\tip\t\tscport\n");
-						list(root, argv[2]);
-						printf("\n\n\n\n\n\n\n\n\n");
-						DeleteUser(&root, "bernardo");
-						list(root, argv[2]);
-						printf("\n\n\n\n\n\n\n\n\n");
 						list(root, argv[2]);
 					}
 				}

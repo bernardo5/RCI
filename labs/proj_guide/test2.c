@@ -32,7 +32,7 @@ int main(){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(58000);
 	char eu[100];
-	strcpy(eu, "SUNR rodriguesdossantos");
+	strcpy(eu, "SUNR verissimo");
 	n=sendto(fd, eu, strlen(eu), 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) exit(1);//error
 	

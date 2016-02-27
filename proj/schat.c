@@ -63,7 +63,7 @@ int main(int argc, char**argv){
 	
 	
 	
-	int fd, n; 
+	int fd, n/*, leav=1*/; 
 	socklen_t addrlen;
 	struct sockaddr_in addr;
 	char* buffer=malloc(128*sizeof(char));
@@ -97,10 +97,10 @@ int main(int argc, char**argv){
 			write(1, "echo: ",6);//stdout
 			buffer[n]='\0';
 			printf("%s\n", buffer);
-			
+			//leav=0;
 		}else if(strcmp(keyboard, "leave\n")==0){
 			leave(&buffer, argv);
-			
+			//leav=1;
 			n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
 			if(n==-1) exit(1);//error
 			
@@ -116,31 +116,30 @@ int main(int argc, char**argv){
 			printf("%s\n", buffer);
 			
 		}else if(strcmp(keyboard, "exit\n")==0){
-				leave(&buffer, argv);
+				//if(leav){
+					leave(&buffer, argv);
+			//leav=1;
+			n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
+			if(n==-1) exit(1);//error
 			
-				n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
-				if(n==-1) exit(1);//error
-				
-				/*receive echo part*/
-				
-				addrlen=sizeof(addr);
-				printf("going to rcvfrom\n");
-				n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-				if(n==-1) exit(1);//error
-				printf("answer to echo\n");
-				write(1, "echo: ",6);//stdout
-				buffer[n]='\0';
-				printf("%s\n", buffer);
+			/*receive echo part*/
 			
-				printf("exiting now.");
-				sleep(1);
-				printf(".");
-				sleep(1);
-				printf(".");
-				sleep(1);
-				printf(".\n");
-				close(fd);
-				exit(0);
+			addrlen=sizeof(addr);
+			printf("going to rcvfrom\n");
+			n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+			if(n==-1) exit(1);//error
+			printf("answer to echo\n");
+			write(1, "echo: ",6);//stdout
+			buffer[n]='\0';
+			printf("%s\n", buffer);
+				
+				
+				
+				
+					close(fd);
+					exit(0);
+				//}else printf("please leave before exit\n");
+				
 		}
 	}
 }

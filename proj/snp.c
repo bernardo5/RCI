@@ -23,28 +23,33 @@ typedef struct _user{
 int find_user(user*root, char*name, char**buf){
 	user*auxiliar=root;
 	
-	if(strcmp(auxiliar->name, name)==0){
-		return 1;
-	}else{
-		if(strcmp(name, auxiliar->name)<0){
-				if((auxiliar->left)==NULL){
-				     strcpy(*buf, "NOK - Invalid name in this server\0");
-					 return 0; /* name does not exist */
-				 }
-				return find_user(auxiliar->left, name, &(*buf));
-		}else if(strcmp(name, auxiliar->name)>0){
-				 if((auxiliar->right)==NULL){
-				     strcpy(*buf, "NOK - Invalid name in this server\0");
-					  return 0; /* name does not exist */
+	if(root!=NULL){
+	
+		if(strcmp(auxiliar->name, name)==0){
+			return 1;
+		}else{
+			if(strcmp(name, auxiliar->name)<0){
+					if((auxiliar->left)==NULL){
+						 strcpy(*buf, "NOK - Invalid name in this server\0");
+						 return 0; /* name does not exist */
+					 }
+					return find_user(auxiliar->left, name, &(*buf));
+			}else if(strcmp(name, auxiliar->name)>0){
+					 if((auxiliar->right)==NULL){
+						 strcpy(*buf, "NOK - Invalid name in this server\0");
+						  return 0; /* name does not exist */
+					  }
+					return find_user(auxiliar->right, name, &(*buf));
+				  }else{
+					  printf("invalid name\n");
+					  strcpy(*buf, "NOK - Invalid name in this server\0");
+					 return 0; 
 				  }
-				return find_user(auxiliar->right, name, &(*buf));
-			  }else{
-				  printf("invalid name\n");
-				  strcpy(*buf, "NOK - Invalid name in this server\0");
-				 return 0; 
-			  }
+		}
+	}else{
+		 strcpy(*buf, "NOK - Invalid name in this server\0");
+		 return 0; /* name does not exist */
 	}
-
 }
 
 
@@ -271,7 +276,10 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 						separate_delimiters_UNR(*buf, &(*name), &(*surname));
 						printf("%s %s\n", *name, *surname);
 						if(validate_surname(surname_program, *surname, &(*buf))!=0)	return;
-						if(find_user((*root), *name, &(*buf))) DeleteUser(&(*root), *name, &(*buf));
+						if(find_user((*root), *name, &(*buf))){
+							printf("encontrou e nao devia\n");
+							 DeleteUser(&(*root), *name, &(*buf));
+						 }
 				  }
 		}else{
 			strcpy(*buf, "NOK - invalid command\0");

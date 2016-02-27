@@ -10,45 +10,7 @@
 #include <sys/types.h>
 #include <string.h>
 
-int check_dot(char*names){
-	char*pointer_to_dot=strchr(names, '.');
-	if(pointer_to_dot==names){
-		printf("ponto no inicio\n");
-		return 0;
-	}else if(pointer_to_dot==NULL){
-		printf("nao ha ponto\n");
-			return 0;
-		}else if(names[strlen(names)-1]=='.'){
-			printf("ponto no final\n");
-			return 0;
-		}else return 1;
-}
-
-void check_args(int argc, char**argv){
-	/*check if program was called correctly for mandatory parameters*/
-	if(argc<11){
-		printf("too few arguments\n\n");
-		printf("Please use correct call: schat -n name.surname -i ip -p scport -s snpip -q snpport\n");
-		exit(-1);
-	}
-	if(!((strcmp(argv[1], "-n")==0)&&(strcmp(argv[3], "-i")==0)&&(strcmp(argv[5], "-p")==0)&&(strcmp(argv[7], "-s")==0)&&(strcmp(argv[9], "-q")==0))){
-		printf("Incorrect use of program call\n");
-		printf("Please use correct call: schat -n name.surname -i ip -p scport -s snpip -q snpport\n");
-		exit(-1);
-	}else{ /* - parameters are ok */
-		if(!check_dot(argv[2])){
-			 printf("Please use correct call: schat -n name.surname -i ip -p scport -s snpip -q snpport\nSpecify name and a surname\n");
-			exit(-1);
-		}
-	}	
-	/* ************************* */
-	return;
-}
-
-int main(int argc, char**argv){
-	
-	check_args(argc, argv);
-	
+int main(){
 	int fd, n, addrlen;
 	struct sockaddr_in addr;
 	struct hostent *h;

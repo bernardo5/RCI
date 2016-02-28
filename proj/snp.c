@@ -267,11 +267,12 @@ int validate_surname(char*surname_program, char*surname, char**buf){
 
 void validate_user_command(char**buf, char **name, char**surname, char**ip, int*scport, char*surname_program, user**root){
 	char command[6];
+	char query[30];
 	if(sscanf(*buf, "%s", command)!=1){
 		printf("error in arguments\n");
 	}else{
 		printf("command= %s\n", command);
-		if(strcmp(command, "REG")==0||strcmp(command, "UNR")==0){
+		if((strcmp(command, "REG")==0)||(strcmp(command, "UNR")==0)||(strcmp(command, "QRY")==0)){
 			if(strcmp(command, "REG")==0){ /* registo de um user */
 				separate_delimiters_REG(*buf, &(*name), &(*surname), &(*ip), &(*scport));
 				if(validate_surname(surname_program, *surname, &(*buf))!=0)return;
@@ -285,7 +286,19 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 							printf("encontrou e nao devia\n");
 							 DeleteUser(&(*root), *name, &(*buf));
 						 }
-				  }
+			}else if(strcmp(command, "QRY")==0){
+				strcpy(query, *buf);
+				separate_delimiters_UNR(query, &(*name), &(*surname));
+				printf("%s %s\n", *name, *surname);
+				if(validate_surname(surname_program, *surname, &(*buf))!=0){
+					/*enviar squery a perguntar qual o servidor cm quem tem de falar*/
+					printf("%s\n", *surname);
+					printf("QRY de apelido diferente: %s\n", *surname);
+				}else{/*information in this server*/
+					/*send RPL*/
+					printf("enviar RPL\n");
+				}
+			}
 		}else{
 			strcpy(*buf, "NOK - invalid command\0");
 		}

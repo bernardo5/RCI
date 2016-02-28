@@ -55,11 +55,18 @@ void leave(char**buf, char**argv){
 	return;
 }
 
+void find(char**buf, char*names){
+	sprintf(*buf, "%s %s\n","QRY", names);	
+	return;
+}
+
 int main(int argc, char**argv){
 	
 	check_args(argc, argv);
 	
-	char keyboard[15];
+	char keyboard[45];
+	char command[15], key[15];
+	char*names=malloc(15*sizeof(char));
 	
 	
 	
@@ -79,45 +86,12 @@ int main(int argc, char**argv){
 	
 	
 	while(1){
-		fgets(keyboard, 15, stdin);
+		fgets(keyboard, 45, stdin);
+		if(sscanf(keyboard, "%s", command)==1){
 		
-		if(strcmp(keyboard, "join\n")==0){
-			join(&buffer, argv);
-			
-			n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
-			if(n==-1) exit(1);//error
-			
-			/*receive echo part*/
-			
-			addrlen=sizeof(addr);
-			printf("going to rcvfrom\n");
-			n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-			if(n==-1) exit(1);//error
-			printf("answer to echo\n");
-			write(1, "echo: ",6);//stdout
-			buffer[n]='\0';
-			printf("%s\n", buffer);
-			leav=0;
-		}else if(strcmp(keyboard, "leave\n")==0){
-			leave(&buffer, argv);
-			leav=1;
-			n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
-			if(n==-1) exit(1);//error
-			
-			/*receive echo part*/
-			
-			addrlen=sizeof(addr);
-			printf("going to rcvfrom\n");
-			n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-			if(n==-1) exit(1);//error
-			printf("answer to echo\n");
-			write(1, "echo: ",6);//stdout
-			buffer[n]='\0';
-			printf("%s\n", buffer);
-			
-		}else if(strcmp(keyboard, "exit\n")==0){
-			if(!leav){
-				leave(&buffer, argv);
+			if(strcmp(command, "join")==0){
+				join(&buffer, argv);
+				
 				n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
 				if(n==-1) exit(1);//error
 				
@@ -131,11 +105,71 @@ int main(int argc, char**argv){
 				write(1, "echo: ",6);//stdout
 				buffer[n]='\0';
 				printf("%s\n", buffer);
-			}				
-					close(fd);
-					exit(0);
-				//}else printf("please leave before exit\n");
+				leav=0;
 				
+			}else if(strcmp(command, "find")==0){
+				if(sscanf(keyboard, "%s %s", command, names)!=2){
+					printf("not enough arguments\n");
+				}else{
+					if(check_dot(names)){
+						printf("name and surname: %s\n", names);
+						find(&buffer, names);
+						
+						n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
+						if(n==-1) exit(1);//error
+						
+						/*receive echo part*/
+						
+						addrlen=sizeof(addr);
+						printf("going to rcvfrom\n");
+						n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+						if(n==-1) exit(1);//error
+						printf("answer to echo\n");
+						write(1, "echo: ",6);//stdout
+						buffer[n]='\0';
+						printf("%s\n", buffer);
+					}
+				}
+				
+			}else if(strcmp(command, "leave")==0){
+				leave(&buffer, argv);
+				leav=1;
+				n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
+				if(n==-1) exit(1);//error
+				
+				/*receive echo part*/
+				
+				addrlen=sizeof(addr);
+				printf("going to rcvfrom\n");
+				n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+				if(n==-1) exit(1);//error
+				printf("answer to echo\n");
+				write(1, "echo: ",6);//stdout
+				buffer[n]='\0';
+				printf("%s\n", buffer);
+				
+			}else if(strcmp(command, "exit")==0){
+				if(!leav){
+					leave(&buffer, argv);
+					n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
+					if(n==-1) exit(1);//error
+					
+					/*receive echo part*/
+					
+					addrlen=sizeof(addr);
+					printf("going to rcvfrom\n");
+					n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+					if(n==-1) exit(1);//error
+					printf("answer to echo\n");
+					write(1, "echo: ",6);//stdout
+					buffer[n]='\0';
+					printf("%s\n", buffer);
+				}				
+						close(fd);
+						exit(0);
+					//}else printf("please leave before exit\n");
+					
+			}
 		}
 	}
 }

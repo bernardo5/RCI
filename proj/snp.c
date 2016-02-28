@@ -341,6 +341,9 @@ char * get_user_location(char*server, char*name){
 	
 	separate_delimiters_SRPL(server, &surname, &snpip, &snpport);
 	
+	printf(" jdkhcjdncjadcjdlvncdjvnidvndjv %s %s %d\n", surname, snpip, snpport);
+	printf("%s\n", name);
+	
 	char* answer=malloc(128*sizeof(char));
 	char query[45];
 	
@@ -357,6 +360,7 @@ char * get_user_location(char*server, char*name){
 	addr.sin_port=htons(snpport);
 	
 	sprintf(query, "%s %s%s%s", "QRY", name, ".", surname);
+	printf("query: %s\n", query);
 	
 	addrlen=sizeof(addr);
 	n=sendto(fd, query, 45, 0, (struct sockaddr*)&addr, sizeof(addr));
@@ -364,8 +368,10 @@ char * get_user_location(char*server, char*name){
 	
 	/*receive echo part*/
 	addrlen=sizeof(addr);
+	printf("dsj\n");
 	n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
 	if(n==-1) return "error\n";//error
+	printf("bring it\n");
 	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
 	write(1, answer, n);
@@ -408,6 +414,7 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 					/*enviar squery a perguntar qual o servidor cm quem tem de falar*/
 					printf("%s\n", ask_server(*surname));
 					strcpy(*buf, get_user_location(ask_server(*surname), *name));
+					printf("%s", *buf);
 				}else{/*information in this server*/
 					/*send RPL*/
 					printf("enviar RPL\n");
@@ -511,7 +518,7 @@ int main(int argc, char**argv){
 	memset((void*)&addr, (int)'\0', sizeof(addr));
 	addr.sin_family=AF_INET;
 	addr.sin_addr.s_addr=htonl(INADDR_ANY);
-	addr.sin_port=htons(9000);
+	addr.sin_port=htons(atoi(argv[6]));
 	
 	ret=bind(fd, (struct sockaddr*)&addr, sizeof(addr));
 	if(ret==-1){

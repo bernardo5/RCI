@@ -311,6 +311,67 @@ char* ask_server(char*surname){
 	return answer;	
 }
 
+void separate_delimiters_SRPL(char *str, char**surname, char**ip, int* scport){
+	char*port;
+	char *ip1, *ip2, *ip3, *ip4;
+	char *delimiter = " .;";
+	char *token;
+	// get the first token 
+	token = strtok(str, delimiter);
+	// walk through other tokens 
+    *surname=strtok(NULL, delimiter);
+    ip1=strtok(NULL, delimiter);
+    ip2=strtok(NULL, delimiter);
+    ip3=strtok(NULL, delimiter);
+    ip4=strtok(NULL, delimiter);
+    sprintf(*ip, "%s%s%s%s%s%s%s", ip1, ".", ip2, ".", ip3, ".", ip4);
+    port=strtok(NULL, delimiter);
+    sscanf(port, "%d", scport);
+	return;
+}
+
+char * get_user_location(char*server, char*name){
+	char *surname=malloc(15*sizeof(char));
+	char *snpip=malloc(15*sizeof(char));
+	int snpport;
+	
+	separate_delimiters_SRPL(server, &surname, &snpip, &snpport);
+	
+	char* answer=malloc(128*sizeof(char));
+	char query[45];
+	
+	int fd, n;
+	struct sockaddr_in addr;
+	socklen_t addrlen;
+	
+	fd=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
+	if(fd==-1) exit(-1);/*error*/
+	
+	memset((void*)&addr, (int)'\0', sizeof(addr));
+	addr.sin_family=AF_INET;
+	inet_aton(snpip, & addr.sin_addr);
+	addr.sin_port=htons(snpport);
+	
+	sprintf(query, "%s %s%s%s", "QRY", name, ".", surname);
+	
+	addrlen=sizeof(addr);
+	n=sendto(fd, query, 45, 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) return "error\n";//error
+	
+	/*receive echo part*/
+	addrlen=sizeof(addr);
+	n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) return "error\n";//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	write(1, answer, n);
+	printf("\n");
+	
+	
+	return answer;
+	
+}
+
 void validate_user_command(char**buf, char **name, char**surname, char**ip, int*scport, char*surname_program, user**root){
 	char command[6];
 	char query[30];
@@ -340,6 +401,7 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 					printf("QRY de apelido diferente: %s\n", *surname);
 					/*enviar squery a perguntar qual o servidor cm quem tem de falar*/
 					printf("%s\n", ask_server(*surname));
+					strcpy(*buf, get_user_location(ask_server(*surname), *name));
 				}else{/*information in this server*/
 					/*send RPL*/
 					printf("enviar RPL\n");

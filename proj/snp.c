@@ -20,12 +20,17 @@ typedef struct _user{
 	struct _user*right;
 }user;
 
-int find_user(user*root, char*name, char**buf){
+int find_user(user*root, char*name, char**buf, char*surname, int qry){
 	user*auxiliar=root;
 	
 	if(root!=NULL){
 	
 		if(strcmp(auxiliar->name, name)==0){
+			if(qry){
+				char answer[45];
+				sprintf(answer, "%s %s%s%s%s%s%s%d", "RPL", auxiliar->name, ".", surname, ";", auxiliar->ip, ";", auxiliar->scport);
+				strcpy(*buf, answer);
+			}
 			return 1;
 		}else{
 			if(strcmp(name, auxiliar->name)<0){
@@ -33,13 +38,13 @@ int find_user(user*root, char*name, char**buf){
 						 strcpy(*buf, "NOK - Invalid name in this server\0");
 						 return 0; /* name does not exist */
 					 }
-					return find_user(auxiliar->left, name, &(*buf));
+					return find_user(auxiliar->left, name, &(*buf), surname, qry);
 			}else if(strcmp(name, auxiliar->name)>0){
 					 if((auxiliar->right)==NULL){
 						 strcpy(*buf, "NOK - Invalid name in this server\0");
 						  return 0; /* name does not exist */
 					  }
-					return find_user(auxiliar->right, name, &(*buf));
+					return find_user(auxiliar->right, name, &(*buf), surname, qry);
 				  }else{
 					  printf("invalid name\n");
 					  strcpy(*buf, "NOK - Invalid name in this server\0");
@@ -282,7 +287,7 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 						separate_delimiters_UNR(*buf, &(*name), &(*surname));
 						printf("%s %s\n", *name, *surname);
 						if(validate_surname(surname_program, *surname, &(*buf))!=0)	return;
-						if(find_user((*root), *name, &(*buf))){
+						if(find_user((*root), *name, &(*buf), *surname, 0)){
 							printf("encontrou e nao devia\n");
 							 DeleteUser(&(*root), *name, &(*buf));
 						 }
@@ -297,6 +302,7 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 				}else{/*information in this server*/
 					/*send RPL*/
 					printf("enviar RPL\n");
+					find_user((*root), (*name), &(*buf), *surname, 1);
 				}
 			}
 		}else{

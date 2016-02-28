@@ -270,6 +270,47 @@ int validate_surname(char*surname_program, char*surname, char**buf){
 	return strcmp(surname_program, surname);
 }
 
+char* ask_server(char*surname){
+	char* answer=malloc(128*sizeof(char));
+	char query[45];
+	
+	int fd, n;
+	struct sockaddr_in addr;
+	struct hostent *h;
+	struct in_addr *a;
+	socklen_t addrlen;
+	
+	if((h=gethostbyname("tejo.tecnico.ulisboa.pt"))==NULL){
+		return "error\n";//error
+	}
+	a=(struct in_addr*)h->h_addr_list[0];
+	
+	fd=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
+	if(fd==-1) exit(-1);/*error*/
+	
+	memset((void*)&addr, (int)'\0', sizeof(addr));
+	addr.sin_family=AF_INET;
+	addr.sin_addr=*a;
+	addr.sin_port=htons(58000);
+	
+	sprintf(query, "%s %s", "SQRY", surname);
+	
+	addrlen=sizeof(addr);
+	n=sendto(fd, query, 45, 0, (struct sockaddr*)&addr, sizeof(addr));
+	if(n==-1) return "error\n";//error
+	
+	/*receive echo part*/
+	addrlen=sizeof(addr);
+	n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
+	if(n==-1) return "error\n";//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	write(1, answer, n);
+	printf("\n");
+	
+	return answer;	
+}
+
 void validate_user_command(char**buf, char **name, char**surname, char**ip, int*scport, char*surname_program, user**root){
 	char command[6];
 	char query[30];
@@ -296,9 +337,9 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 				separate_delimiters_UNR(query, &(*name), &(*surname));
 				printf("%s %s\n", *name, *surname);
 				if(validate_surname(surname_program, *surname, &(*buf))!=0){
-					/*enviar squery a perguntar qual o servidor cm quem tem de falar*/
-					printf("%s\n", *surname);
 					printf("QRY de apelido diferente: %s\n", *surname);
+					/*enviar squery a perguntar qual o servidor cm quem tem de falar*/
+					printf("%s\n", ask_server(*surname));
 				}else{/*information in this server*/
 					/*send RPL*/
 					printf("enviar RPL\n");

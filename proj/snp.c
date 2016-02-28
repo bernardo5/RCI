@@ -35,24 +35,20 @@ int find_user(user*root, char*name, char**buf, char*surname, int qry){
 		}else{
 			if(strcmp(name, auxiliar->name)<0){
 					if((auxiliar->left)==NULL){
-						 strcpy(*buf, "NOK - Invalid name in this server\0");
 						 return 0; /* name does not exist */
 					 }
 					return find_user(auxiliar->left, name, &(*buf), surname, qry);
 			}else if(strcmp(name, auxiliar->name)>0){
 					 if((auxiliar->right)==NULL){
-						 strcpy(*buf, "NOK - Invalid name in this server\0");
 						  return 0; /* name does not exist */
 					  }
 					return find_user(auxiliar->right, name, &(*buf), surname, qry);
 				  }else{
 					  printf("invalid name\n");
-					  strcpy(*buf, "NOK - Invalid name in this server\0");
 					 return 0; 
 				  }
 		}
 	}else{
-		 strcpy(*buf, "NOK - Dont hack me. Thank you\0");
 		 return 0; /* name does not exist */
 	}
 }
@@ -391,8 +387,10 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 			if(strcmp(command, "REG")==0){ /* registo de um user */
 				separate_delimiters_REG(*buf, &(*name), &(*surname), &(*ip), &(*scport));
 				if(validate_surname(surname_program, *surname, &(*buf))!=0)return;
-				AddUser(&(*root), *name, *ip, *scport,  &(*buf));
-				put_to_null(&(*root), (*name));
+				if(!find_user((*root), *name, &(*buf), *surname, 0)){
+					AddUser(&(*root), *name, *ip, *scport,  &(*buf));
+					put_to_null(&(*root), (*name));
+				}
 			}else if(strcmp(command, "UNR")==0){ /* apagar a sessao de um user */
 						separate_delimiters_UNR(*buf, &(*name), &(*surname));
 						printf("%s %s\n", *name, *surname);
@@ -400,7 +398,7 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 						if(find_user((*root), *name, &(*buf), *surname, 0)){
 							printf("encontrou e nao devia\n");
 							 DeleteUser(&(*root), *name, &(*buf));
-						 }
+						 }else  strcpy(*buf, "NOK - Invalid name in this server\0");
 			}else if(strcmp(command, "QRY")==0){
 				strcpy(query, *buf);
 				separate_delimiters_UNR(query, &(*name), &(*surname));

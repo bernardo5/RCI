@@ -30,6 +30,8 @@ int find_user(user*root, char*name, char**buf, char*surname, int qry){
 				char answer[45];
 				sprintf(answer, "%s %s%s%s%s%s%s%d", "RPL", auxiliar->name, ".", surname, ";", auxiliar->ip, ";", auxiliar->scport);
 				strcpy(*buf, answer);
+			}else{
+				strcpy(*buf, "NOK - Already registered");
 			}
 			return 1;
 		}else{
@@ -52,7 +54,6 @@ int find_user(user*root, char*name, char**buf, char*surname, int qry){
 				  }
 		}
 	}else{
-		 strcpy(*buf, "NOK - Dont hack me. Thank you\0");
 		 return 0; /* name does not exist */
 	}
 }
@@ -391,6 +392,7 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 			if(strcmp(command, "REG")==0){ /* registo de um user */
 				separate_delimiters_REG(*buf, &(*name), &(*surname), &(*ip), &(*scport));
 				if(validate_surname(surname_program, *surname, &(*buf))!=0)return;
+				if(find_user((*root), (*name), &(*buf), *surname, 0)) return;
 				AddUser(&(*root), *name, *ip, *scport,  &(*buf));
 				put_to_null(&(*root), (*name));
 			}else if(strcmp(command, "UNR")==0){ /* apagar a sessao de um user */
@@ -398,7 +400,6 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 						printf("%s %s\n", *name, *surname);
 						if(validate_surname(surname_program, *surname, &(*buf))!=0)	return;
 						if(find_user((*root), *name, &(*buf), *surname, 0)){
-							printf("encontrou e nao devia\n");
 							 DeleteUser(&(*root), *name, &(*buf));
 						 }
 			}else if(strcmp(command, "QRY")==0){

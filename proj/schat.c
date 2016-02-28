@@ -46,7 +46,13 @@ void check_args(int argc, char**argv){
 }
 
 void join(char**buf, char**argv){
-	sprintf(*buf, "%s %s%s%s%s%s\n","REG", argv[2], ";", argv[4], ";", argv[6]);	
+	sprintf(*buf, "%s %s%s%s%s%s\n","REG", argv[2], ";", argv[4], ";", argv[6]);
+	/*strcpy(*buf, "REG ");
+	strcat(*buf, argv[2]);
+	strcat(*buf, ";");
+	strcat(*buf, argv[4]);
+	strcat(*buf, ";");
+	strcat(*buf, argv[6]);*/	
 	return;
 }
 

@@ -238,6 +238,14 @@ void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, in
     ip2=strtok(NULL, delimiter);
     ip3=strtok(NULL, delimiter);
     ip4=strtok(NULL, delimiter);
+    /*strcpy(*ip, ip1);
+    strcat(*ip, ".");
+    strcat(*ip, ip2);
+    strcat(*ip, ".");
+    strcat(*ip, ip3);
+    strcat(*ip, ".");
+    strcat(*ip, ip4);*/
+    
     sprintf(*ip, "%s%s%s%s%s%s%s", ip1, ".", ip2, ".", ip3, ".", ip4);
     port=strtok(NULL, delimiter);
     sscanf(port, "%d", scport);
@@ -468,11 +476,11 @@ int main(int argc, char**argv){
 	int nread;
 	char buf[15];
 	socklen_t addrlen;
-	char *name, *surname, *ip;
+	char *name=malloc(35*sizeof(char));
+	char *surname=malloc(35*sizeof(char));
+	char*ip=malloc(30*sizeof(char));
 	int scport;
 	user*root=NULL; /*pointer to binary tree to store users*/
-	
-	/*empty_buffer(&buffer);*/
 	
 	if(server_specified==1){
 		a=(struct in_addr*)argv[8];

@@ -28,7 +28,7 @@ int find_user(user*root, char*name, char**buf, char*surname, int qry){
 		if(strcmp(auxiliar->name, name)==0){
 			if(qry){
 				char answer[45];
-				sprintf(answer, "%s %s%s%s%s%s%s%d\0", "RPL", auxiliar->name, ".", surname, ";", auxiliar->ip, ";", auxiliar->scport);
+				sprintf(answer, "%s %s%s%s%s%s%s%d\n", "RPL", auxiliar->name, ".", surname, ";", auxiliar->ip, ";", auxiliar->scport);
 				strcpy(*buf, answer);
 			}
 			return 1;
@@ -321,6 +321,7 @@ void separate_delimiters_SRPL(char *str, char**surname, char**ip, int* scport){
 	char *delimiter = " .;";
 	char *token;
 	// get the first token 
+	printf("string do core dump: %s\n", str);
 	token = strtok(str, delimiter);
 	// walk through other tokens 
     *surname=strtok(NULL, delimiter);

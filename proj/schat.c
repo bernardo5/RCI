@@ -62,7 +62,8 @@ void leave(char**buf, char**argv){
 }
 
 void find(char**buf, char*names){
-	sprintf(*buf, "%s %s\n","QRY", names);	
+	bzero(*buf, 128);
+	sprintf(*buf, "%s %s","QRY", names);	
 	return;
 }
 

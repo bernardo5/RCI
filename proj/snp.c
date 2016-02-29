@@ -418,7 +418,9 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 				}else{/*information in this server*/
 					/*send RPL*/
 					printf("enviar RPL\n");
-					find_user((*root), (*name), &(*buf), *surname, 1);
+					if(!find_user((*root), (*name), &(*buf), *surname, 1)){
+						strcpy(*buf, "User not registered\n");
+					}
 				}
 			}
 		}else{

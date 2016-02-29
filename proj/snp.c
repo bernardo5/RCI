@@ -28,7 +28,7 @@ int find_user(user*root, char*name, char**buf, char*surname, int qry){
 		if(strcmp(auxiliar->name, name)==0){
 			if(qry){
 				char answer[45];
-				sprintf(answer, "%s %s%s%s%s%s%s%d\0", "RPL", auxiliar->name, ".", surname, ";", auxiliar->ip, ";", auxiliar->scport);
+				sprintf(answer, "%s %s%s%s%s%s%s%d", "RPL", auxiliar->name, ".", surname, ";", auxiliar->ip, ";", auxiliar->scport);
 				strcpy(*buf, answer);
 			}
 			return 1;

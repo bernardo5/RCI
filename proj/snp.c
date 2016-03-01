@@ -307,6 +307,7 @@ char* ask_server(char*surname){
 	addrlen=sizeof(addr);
 	n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
 	if(n==-1) return "error\n";//error
+	if(n<128) answer[n]='\0';
 	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
 	write(1, answer, n);
@@ -371,6 +372,7 @@ char * get_user_location(char*server, char*name){
 	printf("dsj\n");
 	n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
 	if(n==-1) return "error\n";//error
+	if(n<128) answer[n]='\0';
 	printf("bring it\n");
 	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
@@ -568,6 +570,7 @@ int main(int argc, char**argv){
 			addrlen=sizeof(addr);
 			nread=recvfrom(fd, buff,128,0,(struct sockaddr*)&addr, &addrlen);
 			if(nread==-1)exit(1);//error
+			if(nread<128) buff[nread]='\0';
 			write(1, "received: ",10);//stdout
 			write(1, buff, nread);
 			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2], &root);

@@ -347,6 +347,8 @@ char * get_user_location(char*server, char*name){
 	
 	char* answer=malloc(128*sizeof(char));
 	char query[45];
+	fd_set rfds;
+	int counter;
 	
 	int fd, n;
 	struct sockaddr_in addr;
@@ -370,15 +372,32 @@ char * get_user_location(char*server, char*name){
 	/*receive echo part*/
 	addrlen=sizeof(addr);
 	printf("dsj\n");
-	n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
-	if(n==-1) return "error\n";//error
-	if(n<128) answer[n]='\0';
-	printf("bring it\n");
-	printf("answer to echo\n");
-	write(1, "echo: ",6);//stdout
-	write(1, answer, n);
-	printf("\n");
 	
+	
+	/***************************************************************/
+	struct timeval tv = {60, 0}; /*waits 1m for an answer*/
+	FD_ZERO(&rfds);
+	FD_SET(fd,&rfds);
+	counter=select(fd + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
+
+	if(counter<0){
+		printf("Error in select\n");
+		exit(1);//errror
+	}
+	
+	if(FD_ISSET(fd,&rfds)){
+			n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
+			if(n==-1) return "error\n";//error
+			if(n<128) answer[n]='\0';
+			printf("bring it\n");
+			printf("answer to echo\n");
+			write(1, "echo: ",6);//stdout
+			write(1, answer, n);
+			printf("\n");
+	}
+	/*************************************************************/	
+	
+	if(counter==0) return "NOK - can not reach server\n\0";
 	
 	return answer;
 	

@@ -69,7 +69,8 @@ void find(char**buf, char*names){
 int main(int argc, char**argv){
 	
 	check_args(argc, argv);
-	
+	fd_set rfds;
+	int counter;
 	char keyboard[45];
 	char command[15], key[15];
 	char*names=malloc(15*sizeof(char));
@@ -103,15 +104,35 @@ int main(int argc, char**argv){
 				
 				/*receive echo part*/
 				
-				addrlen=sizeof(addr);
+				addrlen=sizeof(addr);				
 				printf("going to rcvfrom\n");
-				n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-				if(n==-1) exit(1);//error
-				printf("answer to echo\n");
-				write(1, "echo: ",6);//stdout
-				buffer[n]='\0';
-				printf("%s\n", buffer);
-				leav=0;
+				
+				/***************************************************************/
+				struct timeval tv = {60, 0}; /*waits 1m for an answer*/
+				FD_ZERO(&rfds);
+				FD_SET(fd,&rfds);
+				counter=select(fd + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
+
+				if(counter<0){
+					printf("Error in select\n");
+					exit(1);//errror
+				}
+				
+				if(FD_ISSET(fd,&rfds)){
+						n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
+						if(n==-1) exit(1);//error
+						printf("answer to echo\n");
+						write(1, "echo: ",6);//stdout
+						buffer[n]='\0';
+						printf("%s\n", buffer);
+						leav=0;
+				}
+	/*************************************************************/
+				if(counter==0){
+					printf("NOK - Non existing server for that surname\n Choose another please\n");
+					exit(0);
+					
+				 }
 				
 			}else if(strcmp(command, "find")==0){
 				if(sscanf(keyboard, "%s %s", command, names)!=2){

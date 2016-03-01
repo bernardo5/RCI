@@ -460,6 +460,7 @@ void registe(char**buff, char**argv, int fd, struct sockaddr_in addr, char*place
 	addrlen=sizeof(addr);
 	n=recvfrom(fd, *buff, 128,0, (struct sockaddr*)&addr, &addrlen);
 	if(n==-1) exit(1);//error
+	if(n<128) *buff[n]='\0';
 	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
 	write(1, *buff, n);

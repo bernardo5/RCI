@@ -83,6 +83,14 @@ int main(int argc, char**argv){
 	fd_set rfds;
 	int counter;
 	
+	int fd_tcp, n_tcp, newfd, afd;
+	enum {idle,busy} state=idle;
+	
+	socklen_t addrlen_tcp;
+	struct sockaddr_in addr_tcp;
+	char*ptr;
+	char* buffer_tcp=malloc(128*sizeof(char));
+	
 	fd=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
 	if(fd==-1) exit(-1);/*error*/
 	
@@ -90,6 +98,16 @@ int main(int argc, char**argv){
 	addr.sin_family=AF_INET;
 	inet_aton(argv[8], & addr.sin_addr);
 	addr.sin_port=htons(atoi(argv[10]));
+	
+	
+	if((fd_tcp=socket(AF_INET,SOCK_STREAM,0))==-1)exit(1);//error
+
+	memset((void*)&addr_tcp,(int)'\0',sizeof(addr_tcp));
+	addr_tcp.sin_family=AF_INET;
+	addr_tcp.sin_addr.s_addr=htonl(INADDR_ANY);
+	addr_tcp.sin_port=htons(atoi(argv[6]));
+
+	if(bind(fd_tcp,(struct sockaddr*)&addr_tcp,sizeof(addr_tcp))==-1) exit(1);//error
 	
 	
 	
@@ -186,5 +204,27 @@ int main(int argc, char**argv){
 				}
 			}
 		}
+		if(FD_ISSET(fd_tcp, &rfds)){
+			addrlen_tcp=sizeof(addr_tcp);
+
+			if((newfd=accept(fd_tcp,(struct sockaddr*)&addr_tcp,&addrlen_tcp))==-1)exit(1);//error
+			switch(state){
+				case idle: afd=newfd; state=busy; break;
+				case busy: strcpy(buffer_tcp,"busy\n");ptr=&buffer_tcp[0]; if(write(newfd,ptr,n_tcp)<=0)exit(1);//error
+				close(newfd); break;
+			}
+		}
+		
+		if(FD_ISSET(afd,&rfds)){
+			if((n_tcp=read(afd,buffer_tcp,128))!=0){
+				if(n_tcp==-1)exit(1);//error
+				ptr=&buffer_tcp[0];
+				if(write(afd,ptr,n_tcp)<=0)exit(1);
+			}else{
+				close(afd);
+				state=idle;
+			}//connection closed by peer
+		}
+	
 	}
 }

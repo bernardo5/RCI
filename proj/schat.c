@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <string.h>
 
+#define max(A,B) ((A)>=(B)?(A):(B))
+
 int check_dot(char*names){
 	char*pointer_to_dot=strchr(names, '.');
 	if(pointer_to_dot==names){
@@ -83,8 +85,8 @@ int main(int argc, char**argv){
 	fd_set rfds;
 	int counter;
 	
-	int fd_tcp, n_tcp, newfd, afd;
-	enum {idle,busy} state=idle;
+	int fd_tcp, n_tcp, newfd, afd, maxfd;
+	enum {idle,busy} state;
 	
 	socklen_t addrlen_tcp;
 	struct sockaddr_in addr_tcp;
@@ -109,13 +111,16 @@ int main(int argc, char**argv){
 
 	if(bind(fd_tcp,(struct sockaddr*)&addr_tcp,sizeof(addr_tcp))==-1) exit(1);//error
 	
-	
-	
+	if(listen(fd_tcp,5)==-1)exit(1);//error
+	state=idle;
 	while(1){
 		FD_ZERO(&rfds);
 		FD_SET(fileno(stdin), &rfds);
+		FD_SET(fd_tcp, &rfds);maxfd=fd_tcp;
 		
-		counter=select(fileno(stdin)+1, &rfds, (fd_set*)NULL, (fd_set*)NULL, (struct timeval*)NULL);
+		if(state==busy){FD_SET(afd,&rfds);maxfd=max(maxfd,afd);}
+		
+		counter=select(fileno(stdin)+maxfd+1, &rfds, (fd_set*)NULL, (fd_set*)NULL, (struct timeval*)NULL);
 		if(counter<=0){printf("error in select\n");exit(1);}
 
 		if(FD_ISSET(fileno(stdin),&rfds)){
@@ -205,9 +210,11 @@ int main(int argc, char**argv){
 			}
 		}
 		if(FD_ISSET(fd_tcp, &rfds)){
+			printf("entrou\n");
 			addrlen_tcp=sizeof(addr_tcp);
 
 			if((newfd=accept(fd_tcp,(struct sockaddr*)&addr_tcp,&addrlen_tcp))==-1)exit(1);//error
+			printf("passou e nao aceitou\n");
 			switch(state){
 				case idle: afd=newfd; state=busy; break;
 				case busy: strcpy(buffer_tcp,"busy\n");ptr=&buffer_tcp[0]; if(write(newfd,ptr,n_tcp)<=0)exit(1);//error

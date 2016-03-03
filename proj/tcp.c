@@ -20,7 +20,7 @@ int main(){
 	memset((void*)&addr, (int)'\0', sizeof(addr));
 
 	addr.sin_family=AF_INET;
-	inet_aton("193.136.131.54", &addr.sin_addr);
+	inet_aton("194.210.179.28", &addr.sin_addr);
 	addr.sin_port=htons(58000);
 	
 	n=connect(fd,(struct sockaddr*)&addr, sizeof(addr));

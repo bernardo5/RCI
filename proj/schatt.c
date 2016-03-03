@@ -150,9 +150,9 @@ int main(int argc, char**argv){
 						if(counter<0){
 							printf("Error in select\n");
 							exit(1);//errror
-						}*/
+						}
 								
-						if(FD_ISSET(fd,&udp_rfds)){
+						if(FD_ISSET(fd,&udp_rfds)){*/
 							n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
 							if(n==-1) exit(1);//error
 							printf("answer to echo\n");
@@ -160,7 +160,7 @@ int main(int argc, char**argv){
 							buffer[n]='\0';
 							printf("%s\n", buffer);
 							leav=0;
-						}
+						//}
 					/*************************************************************/
 						if(counter==0){
 							printf("NOK - Non existing server for that surname\n Choose another please\n");

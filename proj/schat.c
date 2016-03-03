@@ -111,10 +111,11 @@ int main(int argc, char**argv)
 
 	addr.sin_family=AF_INET;
 	addr.sin_addr.s_addr=htonl(INADDR_ANY);
-	addr.sin_port=htons(58000);
+	addr.sin_port=htons(atoi(argv[6]));
 
 	if(bind(fd,(struct sockaddr*)&addr,sizeof(addr))==-1){
 		printf("bind\n");
+		perror("socket error");
 		exit(1);//error
 	}
 	if(listen(fd,5)==-1){printf("listen\n");exit(1);}//error

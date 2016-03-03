@@ -1,14 +1,14 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <netdb.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <sys/types.h>
 #include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+
+#define max(A,B) ((A)>=(B)?(A):(B))
+
 
 int check_dot(char*names){
 	char*pointer_to_dot=strchr(names, '.');
@@ -66,129 +66,176 @@ void find(char**buf, char*names){
 	return;
 }
 
-int main(int argc, char**argv){
-	
+
+int main(int argc, char**argv)
+{
 	check_args(argc, argv);
+	
+	/*udp socket*/
+	
+	int fd_udp, n_udp, leav=1; 
+	socklen_t addrlen_udp;
+	struct sockaddr_in addr_udp;
+	char* buffer_udp=malloc(128*sizeof(char));
+	
+	
+	fd_udp=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
+	if(fd_udp==-1) exit(-1);/*error*/
+	
+	memset((void*)&addr_udp, (int)'\0', sizeof(addr_udp));
+	addr_udp.sin_family=AF_INET;
+	inet_aton(argv[8], & addr_udp.sin_addr);
+	addr_udp.sin_port=htons(atoi(argv[10]));
+	
+	
+	
+	/*tcp socket and select*/
+	int fd, newfd, afd;
+	socklen_t addrlen;
 	fd_set rfds;
-	int counter;
+	enum {idle, busy} state;
+	int maxfd,counter;
+	struct sockaddr_in addr;
+	int n, nw;
+	char buffer[128];
+	
 	char keyboard[45];
 	char command[15], key[15];
 	char*names=malloc(15*sizeof(char));
 	
+
+	if((fd=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket\n");exit(1);}//error
+
+	memset((void*)&addr,(int)'\0',sizeof(addr));
 	
-	
-	int fd, n, leav=1; 
-	socklen_t addrlen;
-	struct sockaddr_in addr;
-	char* buffer=malloc(128*sizeof(char));
-	
-	fd=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
-	if(fd==-1) exit(-1);/*error*/
-	
-	memset((void*)&addr, (int)'\0', sizeof(addr));
+
 	addr.sin_family=AF_INET;
-	inet_aton(argv[8], & addr.sin_addr);
-	addr.sin_port=htons(atoi(argv[10]));
-	
-	
-	
+	addr.sin_addr.s_addr=htonl(INADDR_ANY);
+	addr.sin_port=htons(58000);
+
+	if(bind(fd,(struct sockaddr*)&addr,sizeof(addr))==-1){
+		printf("bind\n");
+		exit(1);//error
+	}
+	if(listen(fd,5)==-1){printf("listen\n");exit(1);}//error
+	state=idle;
 	while(1){
-		fgets(keyboard, 45, stdin);
-		if(sscanf(keyboard, "%s", command)==1){
-			if(strcmp(command, "join")==0){
-				join(&buffer, argv);
-				n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
-				if(n==-1) exit(1);//error
-				/*receive echo part*/
-				addrlen=sizeof(addr);				
-				printf("going to rcvfrom\n");
-				/***************************************************************/
-				struct timeval tv = {60, 0}; /*waits 1m for an answer*/
-				FD_ZERO(&rfds);
-				FD_SET(fd,&rfds);
-				counter=select(fd + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
-				if(counter<0){
-					printf("Error in select\n");
-					exit(1);//errror
-				}
-				
-				if(FD_ISSET(fd,&rfds)){
-					n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-					if(n==-1) exit(1);//error
+		FD_ZERO(&rfds);
+		FD_SET(fd,&rfds);maxfd=fd;
+		FD_SET(fileno(stdin), &rfds);
+		if(state==busy){FD_SET(afd,&rfds);maxfd=max(maxfd,afd);}
+		
+		counter=select(fileno(stdin)+maxfd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
+		if(counter<=0)exit(1);//errror
+		
+		if(FD_ISSET(fileno(stdin), &rfds)){
+			fgets(keyboard, 45, stdin);
+			/****************************************/
+			if(sscanf(keyboard, "%s", command)==1){
+				if(strcmp(command, "join")==0){
+					join(&buffer_udp, argv);
+					n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
+					if(n_udp==-1) exit(1);//error
+					/*receive echo part*/
+					addrlen_udp=sizeof(addr_udp);				
+					printf("going to rcvfrom\n");
+					/***************************************************************/
+					
+					n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
+					if(n_udp==-1) exit(1);//error
 					printf("answer to echo\n");
 					write(1, "echo: ",6);//stdout
-					buffer[n]='\0';
-					printf("%s\n", buffer);
+					buffer_udp[n_udp]='\0';
+					printf("%s\n", buffer_udp);
 					leav=0;
-				}
-	/*************************************************************/
-				if(counter==0){
-					printf("NOK - Non existing server for that surname\n Choose another please\n");
-					exit(0);	
-				 }
-				
-			}else if(strcmp(command, "find")==0){
-				if(sscanf(keyboard, "%s %s", command, names)!=2){
-					printf("not enough arguments\n");
-				}else{
-					if(check_dot(names)){
-						printf("name and surname: %s\n", names);
-						find(&buffer, names);
+					
+		/*************************************************************/
+					
+					}else if(strcmp(command, "find")==0){
+						if(sscanf(keyboard, "%s %s", command, names)!=2){
+							printf("not enough arguments\n");
+						}else{
+							if(check_dot(names)){
+								printf("name and surname: %s\n", names);
+								find(&buffer_udp, names);
+								
+								n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
+								if(n_udp==-1) exit(1);//error
+								
+								/*receive echo part*/
+								
+								addrlen_udp=sizeof(addr_udp);
+								printf("going to rcvfrom\n");
+								n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
+								if(n_udp==-1) exit(1);//error
+								printf("answer to echo\n");
+								write(1, "echo: ",6);//stdout
+								buffer_udp[n_udp]='\0';
+								printf("%s\n", buffer_udp);
+							}
+						}
 						
-						n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
-						if(n==-1) exit(1);//error
+					}else if(strcmp(command, "leave")==0){
+						leave(&buffer_udp, argv);
+						leav=1;
+						n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
+						if(n_udp==-1) exit(1);//error
 						
 						/*receive echo part*/
 						
-						addrlen=sizeof(addr);
+						addrlen_udp=sizeof(addr_udp);
 						printf("going to rcvfrom\n");
-						n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-						if(n==-1) exit(1);//error
+						n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
+						if(n_udp==-1) exit(1);//error
 						printf("answer to echo\n");
 						write(1, "echo: ",6);//stdout
-						buffer[n]='\0';
-						printf("%s\n", buffer);
+						buffer_udp[n_udp]='\0';
+						printf("%s\n", buffer_udp);
+						
+					}else if(strcmp(command, "exit")==0){
+						if(!leav){
+							leave(&buffer_udp, argv);
+							n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
+							if(n_udp==-1) exit(1);//error
+							
+							/*receive echo part*/
+							
+							addrlen_udp=sizeof(addr_udp);
+							printf("going to rcvfrom\n");
+							n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
+							if(n_udp==-1) exit(1);//error
+							printf("answer to echo\n");
+							write(1, "echo: ",6);//stdout
+							buffer_udp[n_udp]='\0';
+							printf("%s\n", buffer_udp);
+						}				
+							close(fd_udp);
+							exit(0);
+							//}else printf("please leave before exit\n");
 					}
-				}
-				
-			}else if(strcmp(command, "leave")==0){
-				leave(&buffer, argv);
-				leav=1;
-				n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
-				if(n==-1) exit(1);//error
-				
-				/*receive echo part*/
-				
-				addrlen=sizeof(addr);
-				printf("going to rcvfrom\n");
-				n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-				if(n==-1) exit(1);//error
-				printf("answer to echo\n");
-				write(1, "echo: ",6);//stdout
-				buffer[n]='\0';
-				printf("%s\n", buffer);
-				
-			}else if(strcmp(command, "exit")==0){
-				if(!leav){
-					leave(&buffer, argv);
-					n=sendto(fd, buffer, strlen(buffer), 0, (struct sockaddr*)&addr, sizeof(addr));
-					if(n==-1) exit(1);//error
-					
-					/*receive echo part*/
-					
-					addrlen=sizeof(addr);
-					printf("going to rcvfrom\n");
-					n=recvfrom(fd, buffer, 128,0, (struct sockaddr*)&addr, &addrlen);
-					if(n==-1) exit(1);//error
-					printf("answer to echo\n");
-					write(1, "echo: ",6);//stdout
-					buffer[n]='\0';
-					printf("%s\n", buffer);
-				}				
-					close(fd);
-					exit(0);
-					//}else printf("please leave before exit\n");
+			}
+			/****************************************/
+		}
+		
+		if(FD_ISSET(fd,&rfds)){
+			addrlen=sizeof(addr);
+			if((newfd=accept(fd,(struct sockaddr*)&addr,&addrlen))==-1)exit(1);//error
+			switch(state)
+			{
+				case idle: afd=newfd; state=busy; break;
+				case busy: if((nw=write(newfd,"BUSY\n",n))<=0)exit(1);//error
+				close(newfd); break;
 			}
 		}
-	}
-}
+		if(FD_ISSET(afd,&rfds))
+		{
+			if((n=read(afd,buffer,128))!=0)
+			{if(n==-1)exit(1);//error
+				if((nw=write(afd,buffer,n))<=0)exit(1);//error
+			}
+			else{close(afd); state=idle;}//connection closed by peer
+		}
+	}//while(1)
+	 close(fd);
+	  exit(0);
+}		

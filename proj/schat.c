@@ -93,7 +93,7 @@ int main(int argc, char**argv)
 	check_args(argc, argv);
 	
 	/*udp socket*/
-	int fd_udp, n_udp, leav=1; 
+	int fd_udp, n_udp, leav=1, n_client; 
 	socklen_t addrlen_udp;
 	struct sockaddr_in addr_udp;
 	char* buffer_udp=malloc(128*sizeof(char));
@@ -110,13 +110,13 @@ int main(int argc, char**argv)
 	
 	
 	/*tcp socket and select*/
-	int fd, newfd, afd;
-	socklen_t addrlen;
+	int fd, newfd, afd, fd_client;
+	socklen_t addrlen, addrlen_client;
 	fd_set rfds;
 	//fd_set bla;
 	enum {idle, busy} state;
 	int maxfd,counter;
-	struct sockaddr_in addr;
+	struct sockaddr_in addr, addr_client;
 	int n, nw;
 	char buffer[128];
 	
@@ -244,13 +244,27 @@ int main(int argc, char**argv)
 								printf("%s\n", buffer_udp);
 								
 								/* *****************************************************/
-								//bzero(buffer_udp, strlen(buffer_udp));
+								/*separate arguments*/
 								sscanf(buffer_udp, "%s %[^;];%s", command, names, tcp_ip);
+								printf("tcp_ip: %s\n", tcp_ip);
+								allen[0]='\0';
 								strcpy(allen, tcp_ip);
 								printf("%s\n", allen);
 								sscanf(allen, "%[^;];%d", tcp_ip, &tcp_port);
 								
 								printf("%s %s %s %d\n", command, names, tcp_ip, tcp_port);
+								
+								/* **************************************************** */
+								/*tcp connect*/
+								if((fd_client=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket client\n");exit(1);}//error
+								memset((void*)&addr_client,(int)'\0',sizeof(addr_client));
+								addr_client.sin_family=AF_INET;
+								inet_aton(tcp_ip, &addr_client.sin_addr);
+								addr_client.sin_port=htons(tcp_port);
+								n_client=connect(fd_client,(struct sockaddr*)&addr_client, sizeof(addr_client));
+								if(n_client==-1){printf("erro no connect\n"); exit(1);}
+								
+								
 							}
 							
 						}

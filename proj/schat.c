@@ -93,6 +93,7 @@ int main(int argc, char**argv)
 	int fd, newfd, afd;
 	socklen_t addrlen;
 	fd_set rfds;
+	//fd_set bla;
 	enum {idle, busy} state;
 	int maxfd,counter;
 	struct sockaddr_in addr;
@@ -193,6 +194,8 @@ int main(int argc, char**argv)
 						buffer_udp[n_udp]='\0';
 						printf("%s\n", buffer_udp);
 						
+					}else if(strcmp(command, "connect")==0){
+						printf("command\n");
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){
 							leave(&buffer_udp, argv);

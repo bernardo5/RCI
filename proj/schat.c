@@ -101,8 +101,9 @@ int main(int argc, char**argv)
 	char buffer[128];
 	
 	char keyboard[45];
-	char command[15], key[15];
+	char *command=malloc(15*sizeof(char));
 	char*names=malloc(15*sizeof(char));
+	char*key=malloc(15*sizeof(char));
 	
 
 	if((fd=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket\n");exit(1);}//error
@@ -195,7 +196,11 @@ int main(int argc, char**argv)
 						printf("%s\n", buffer_udp);
 						
 					}else if(strcmp(command, "connect")==0){
-						printf("command\n");
+						if(sscanf(keyboard, "%s %s %s", command, names, key)!=3){
+							printf("not enough arguments\n");
+						}else{
+							printf("%s %s %s\n", command, names, key);
+						}
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){
 							leave(&buffer_udp, argv);

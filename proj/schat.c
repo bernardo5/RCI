@@ -125,7 +125,7 @@ int main(int argc, char**argv)
 	char*names=malloc(15*sizeof(char));
 	char*key=malloc(15*sizeof(char));
 	
-	char tcp_ip[15];
+	char *tcp_ip;
 	char allen[30];
 	int tcp_port;
 	
@@ -245,12 +245,12 @@ int main(int argc, char**argv)
 								
 								/* *****************************************************/
 								/*separate arguments*/
-								sscanf(buffer_udp, "%s %[^;];%s", command, names, tcp_ip);
-								printf("tcp_ip: %s\n", tcp_ip);
-								allen[0]='\0';
-								strcpy(allen, tcp_ip);
-								printf("%s\n", allen);
-								sscanf(allen, "%[^;];%d", tcp_ip, &tcp_port);
+								sscanf(buffer_udp, "%s %[^;];%s", command, names, allen);
+								printf("tcp_ip: %s\n", allen);
+								char *token;
+								tcp_ip = strtok(allen, ";");
+								token=strtok(NULL, ";");
+								tcp_port=atoi(token);
 								
 								printf("%s %s %s %d\n", command, names, tcp_ip, tcp_port);
 								

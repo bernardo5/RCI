@@ -223,21 +223,21 @@ int main(int argc, char**argv)
 						if(sscanf(keyboard, "%s %s %s", command, names, key)!=3){
 							printf("not enough arguments\n");
 						}else{
-							printf("%s %s %s\n", command, names, key);
+							printf("Aqui - %s %s %s\n", command, names, key);
 							/*find part*/
 							if(check_dot(names)){
 								printf("name and surname: %s\n", names);
 								find(&buffer_udp, names);
 								
 								n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
-								if(n_udp==-1) exit(1);//error
+								if(n_udp==-1){printf("send\n"); exit(1);}//error
 								
 								/*receive echo part*/
 								
 								addrlen_udp=sizeof(addr_udp);
 								printf("going to rcvfrom\n");
 								n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
-								if(n_udp==-1) exit(1);//error
+								if(n_udp==-1){printf("rcv\n"); exit(1);}//error
 								printf("answer to echo\n");
 								write(1, "echo: ",6);//stdout
 								buffer_udp[n_udp]='\0';
@@ -252,7 +252,6 @@ int main(int argc, char**argv)
 								
 								printf("%s %s %s %d\n", command, names, tcp_ip, tcp_port);
 							}
-							
 						}
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){
@@ -300,4 +299,4 @@ int main(int argc, char**argv)
 	}//while(1)
 	 close(fd);
 	  exit(0);
-}		
+}	

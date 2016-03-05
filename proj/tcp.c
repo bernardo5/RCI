@@ -20,8 +20,8 @@ int main(){
 	memset((void*)&addr, (int)'\0', sizeof(addr));
 
 	addr.sin_family=AF_INET;
-	inet_aton("192.168.1.71", &addr.sin_addr);
-	addr.sin_port=htons(9000);
+	inet_aton("192.168.1.78", &addr.sin_addr);
+	addr.sin_port=htons(58000);
 	
 	n=connect(fd,(struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1){printf("erro no connect\n"); exit(1);}

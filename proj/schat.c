@@ -200,6 +200,24 @@ int main(int argc, char**argv)
 							printf("not enough arguments\n");
 						}else{
 							printf("%s %s %s\n", command, names, key);
+							if(check_dot(names)){
+								printf("name and surname: %s\n", names);
+								find(&buffer_udp, names);
+								
+								n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
+								if(n_udp==-1) exit(1);//error
+								
+								/*receive echo part*/
+								
+								addrlen_udp=sizeof(addr_udp);
+								printf("going to rcvfrom\n");
+								n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
+								if(n_udp==-1) exit(1);//error
+								printf("answer to echo\n");
+								write(1, "echo: ",6);//stdout
+								buffer_udp[n_udp]='\0';
+								printf("%s\n", buffer_udp);
+							}
 						}
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){

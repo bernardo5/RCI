@@ -66,13 +66,33 @@ void find(char**buf, char*names){
 	return;
 }
 
+/*void separate_delimiters_FIND(char *str, char**ip, int* scport){
+	char*port;
+	char *name;
+	char *surname;
+	char *ip1, *ip2, *ip3, *ip4;
+	char *token;
+	// get the first token 
+	token = strtok(str, " .;");
+	// walk through other tokens 
+	name=strtok(NULL, " .;");
+    surname=strtok(NULL, " .;");
+    ip1=strtok(NULL, " .;");
+    ip2=strtok(NULL, " .;");
+    ip3=strtok(NULL, " .;");
+    ip4=strtok(NULL, " .;");
+    sprintf(*ip, "%s%s%s%s%s%s%s", ip1, ".", ip2, ".", ip3, ".", ip4);
+    port=strtok(NULL, " .;");
+    sscanf(port, "%d", scport);
+	return;
+}*/
+
 
 int main(int argc, char**argv)
 {
 	check_args(argc, argv);
 	
 	/*udp socket*/
-	
 	int fd_udp, n_udp, leav=1; 
 	socklen_t addrlen_udp;
 	struct sockaddr_in addr_udp;
@@ -104,6 +124,10 @@ int main(int argc, char**argv)
 	char *command=malloc(15*sizeof(char));
 	char*names=malloc(15*sizeof(char));
 	char*key=malloc(15*sizeof(char));
+	
+	char tcp_ip[15];
+	char allen[30];
+	int tcp_port;
 	
 
 	if((fd=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket\n");exit(1);}//error
@@ -200,6 +224,7 @@ int main(int argc, char**argv)
 							printf("not enough arguments\n");
 						}else{
 							printf("%s %s %s\n", command, names, key);
+							/*find part*/
 							if(check_dot(names)){
 								printf("name and surname: %s\n", names);
 								find(&buffer_udp, names);
@@ -217,7 +242,17 @@ int main(int argc, char**argv)
 								write(1, "echo: ",6);//stdout
 								buffer_udp[n_udp]='\0';
 								printf("%s\n", buffer_udp);
+								
+								/* *****************************************************/
+								//bzero(buffer_udp, strlen(buffer_udp));
+								sscanf(buffer_udp, "%s %[^;];%s", command, names, tcp_ip);
+								strcpy(allen, tcp_ip);
+								printf("%s\n", allen);
+								sscanf(allen, "%[^;];%d", tcp_ip, &tcp_port);
+								
+								printf("%s %s %s %d\n", command, names, tcp_ip, tcp_port);
 							}
+							
 						}
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){

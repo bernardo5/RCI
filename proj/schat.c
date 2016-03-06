@@ -66,28 +66,6 @@ void find(char**buf, char*names){
 	return;
 }
 
-/*void separate_delimiters_FIND(char *str, char**ip, int* scport){
-	char*port;
-	char *name;
-	char *surname;
-	char *ip1, *ip2, *ip3, *ip4;
-	char *token;
-	// get the first token 
-	token = strtok(str, " .;");
-	// walk through other tokens 
-	name=strtok(NULL, " .;");
-    surname=strtok(NULL, " .;");
-    ip1=strtok(NULL, " .;");
-    ip2=strtok(NULL, " .;");
-    ip3=strtok(NULL, " .;");
-    ip4=strtok(NULL, " .;");
-    sprintf(*ip, "%s%s%s%s%s%s%s", ip1, ".", ip2, ".", ip3, ".", ip4);
-    port=strtok(NULL, " .;");
-    sscanf(port, "%d", scport);
-	return;
-}*/
-
-
 int main(int argc, char**argv)
 {
 	check_args(argc, argv);
@@ -113,8 +91,8 @@ int main(int argc, char**argv)
 	int fd, newfd, afd, fd_client;
 	socklen_t addrlen, addrlen_client;
 	fd_set rfds;
-	//fd_set bla;
 	enum {idle, busy} state;
+	//int c=0;
 	int maxfd,counter;
 	struct sockaddr_in addr, addr_client;
 	int n, nw;
@@ -146,6 +124,7 @@ int main(int argc, char**argv)
 	}
 	if(listen(fd,5)==-1){printf("listen\n");exit(1);}//error
 	state=idle;
+	//c=0;
 	while(1){
 		FD_ZERO(&rfds);
 		FD_SET(fd,&rfds);maxfd=fd;
@@ -219,7 +198,7 @@ int main(int argc, char**argv)
 						buffer_udp[n_udp]='\0';
 						printf("%s\n", buffer_udp);
 						
-					}else if(strcmp(command, "connect")==0){
+					}else if((strcmp(command, "connect")==0)/*&&(connected==false)*/){
 						if(sscanf(keyboard, "%s %s %s", command, names, key)!=3){
 							printf("not enough arguments\n");
 						}else{
@@ -262,12 +241,17 @@ int main(int argc, char**argv)
 								inet_aton(tcp_ip, &addr_client.sin_addr);
 								addr_client.sin_port=htons(tcp_port);
 								n_client=connect(fd_client,(struct sockaddr*)&addr_client, sizeof(addr_client));
-								if(n_client==-1){printf("erro no connect\n"); exit(1);}
+								if(n_client==-1){printf("erro no connect\n"); exit(1);}else{printf("connected\n");/*connected=true;*/}
 								
 								
 							}
 							
 						}
+					}else if((strcmp(command, "message")==0)/*&&(connected==true)*/){
+						printf("send message\n");
+					
+					
+					
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){
 							leave(&buffer_udp, argv);

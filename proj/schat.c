@@ -255,9 +255,13 @@ int main(int argc, char**argv)
 						}else{
 							printf("input: %s\n", keyboard);
 							printf("message to send: %s\n", allen);
+							if((nw=write(fd_client,allen,strlen(allen)+1))<=0){
+								printf("error sending message\n");
+								exit(1);
+							}
+
+							
 						}
-					
-					
 					
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){
@@ -298,7 +302,7 @@ int main(int argc, char**argv)
 		{
 			if((n=read(afd,buffer,128))!=0)
 			{if(n==-1)exit(1);//error
-				if((nw=write(afd,buffer,n))<=0)exit(1);//error
+				printf("message received: %s\n", buffer);//error
 			}
 			else{close(afd); state=idle;}//connection closed by peer
 		}

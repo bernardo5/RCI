@@ -47,12 +47,6 @@ void check_args(int argc, char**argv){
 
 void join(char**buf, char**argv){
 	sprintf(*buf, "%s %s%s%s%s%s\n","REG", argv[2], ";", argv[4], ";", argv[6]);
-	/*strcpy(*buf, "REG ");
-	strcat(*buf, argv[2]);
-	strcat(*buf, ";");
-	strcat(*buf, argv[4]);
-	strcat(*buf, ";");
-	strcat(*buf, argv[6]);*/	
 	return;
 }
 
@@ -205,7 +199,7 @@ int main(int argc, char**argv)
 						}else{
 							printf("%s %s %s\n", command, names, key);
 							/*find part*/
-							if(check_dot(names)){
+							if(check_dot(names)&&(state==idle)){
 								printf("name and surname: %s\n", names);
 								find(&buffer_udp, names);
 								

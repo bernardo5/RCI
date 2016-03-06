@@ -249,6 +249,13 @@ int main(int argc, char**argv)
 						}
 					}else if((strcmp(command, "message")==0)/*&&(connected==true)*/){
 						printf("send message\n");
+						bzero(allen, strlen(allen));
+						if(sscanf(keyboard, "%s %[^\n]s", command, allen)!=2){
+							printf("not enough arguments\n");
+						}else{
+							printf("input: %s\n", keyboard);
+							printf("message to send: %s\n", allen);
+						}
 					
 					
 					

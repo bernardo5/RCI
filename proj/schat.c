@@ -267,6 +267,8 @@ int main(int argc, char**argv)
 					
 					}else if((strcmp(command, "disconnect")==0)){
 						printf("wants to disconnect\n");
+						close(afd);
+						state=idle;
 					
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){

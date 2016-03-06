@@ -128,10 +128,11 @@ int main(int argc, char**argv)
 	while(1){
 		FD_ZERO(&rfds);
 		FD_SET(fd,&rfds);maxfd=fd;
+		//FD_SET(fd_client,&rfds);
 		FD_SET(fileno(stdin), &rfds);
 		if(state==busy){FD_SET(afd,&rfds);maxfd=max(maxfd,afd);}
 		
-		counter=select(fileno(stdin)+maxfd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
+		counter=select(fileno(stdin)+fd_client+maxfd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
 		if(counter<=0)exit(1);//errror
 		
 		if(FD_ISSET(fileno(stdin), &rfds)){
@@ -241,7 +242,7 @@ int main(int argc, char**argv)
 								inet_aton(tcp_ip, &addr_client.sin_addr);
 								addr_client.sin_port=htons(tcp_port);
 								n_client=connect(fd_client,(struct sockaddr*)&addr_client, sizeof(addr_client));
-								if(n_client==-1){printf("erro no connect\n"); exit(1);}else{printf("connected\n");/*connected=true;*/}
+								if(n_client==-1){printf("erro no connect\n"); exit(1);}else{printf("connected\n");afd=fd_client;state=busy;/*connected=true;*/}
 								
 								
 							}
@@ -259,7 +260,7 @@ int main(int argc, char**argv)
 							if((nw=write(fd_client,allen,strlen(allen)+1))<=0){
 								printf("error sending message\n");
 								exit(1);
-							}
+							}else printf("sent: %s\n", allen);
 
 							
 						}

@@ -255,6 +255,7 @@ int main(int argc, char**argv)
 						}else{
 							printf("input: %s\n", keyboard);
 							printf("message to send: %s\n", allen);
+							if(state==busy)fd_client=afd;
 							if((nw=write(fd_client,allen,strlen(allen)+1))<=0){
 								printf("error sending message\n");
 								exit(1);

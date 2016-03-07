@@ -236,7 +236,14 @@ int main(int argc, char**argv)
 								inet_aton(tcp_ip, &addr_client.sin_addr);
 								addr_client.sin_port=htons(tcp_port);
 								n_client=connect(fd_client,(struct sockaddr*)&addr_client, sizeof(addr_client));
-								if(n_client==-1){printf("erro no connect\n"); exit(1);}else{printf("connected\n");afd=fd_client;state=busy;/*connected=true;*/}
+								if(n_client==-1){printf("erro no connect\n"); exit(1);}else{
+									printf("connected\n");afd=fd_client;state=busy;/*connected=true;*/
+									sprintf(allen, "%s %s\n", "NAME", argv[2]);
+									if((nw=write(fd_client,allen,strlen(allen)+1))<=0){
+										printf("error sending message\n");
+										exit(1);
+									}else printf("sent: %s\n", allen);
+								}
 								
 								
 							}

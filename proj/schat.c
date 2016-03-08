@@ -86,7 +86,8 @@ void find(char**buf, char*names){
 int main(int argc, char**argv)
 {
 	check_args(argc, argv);
-	
+	int number;
+	int binary;
 	/*udp socket*/
 	int fd_udp, n_udp, leav=1, n_client; 
 	socklen_t addrlen_udp;

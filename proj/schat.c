@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 
 #define max(A,B) ((A)>=(B)?(A):(B))
 
@@ -94,6 +95,23 @@ void send_challenge(int challenge_number, int newfd, int n){
 	printf("buffer:%s\n", buffer);
 	if((nw=write(newfd,buffer,n))<=0)exit(1);
 	printf("buffer:%s\n", buffer);
+	return;
+}
+
+void get_answer_file(int afd, int line){
+	int n=1;
+	char buffer[128];
+	FILE *fp;
+	
+	fp = fopen("keyfile.txt","r");
+		if(fp == NULL){
+			printf("Erro na abertura do ficheiro para escrita\n");
+			exit(-1);
+		}
+	while((fgets(buffer,sizeof(buffer),fp)!=NULL) && n!=line) n++;	
+	printf("answer: %s in line %d\n", buffer, n);
+	fclose(fp);	
+	
 	return;
 }
 
@@ -278,7 +296,14 @@ int main(int argc, char**argv)
 									if((nw=write(fd_client,allen,strlen(allen)+1))<=0){
 										printf("error sending message\n");
 										exit(1);
-									}else printf("sent: %s\n", allen);
+									}else{
+										 printf("sent: %s\n", allen);
+										if((n=read(fd_client,buffer,128))!=0){
+											if(n==-1)exit(1);
+											printf("line:%d\n", atoi(buffer));
+											get_answer_file(fd_client, binary_to_int(atoi(buffer)));
+										}
+									 }
 									
 								}
 								
@@ -354,7 +379,9 @@ int main(int argc, char**argv)
 				if(strcmp(command, "NAME")==0){
 					printf("entrou no nome\n");
 					printf("Attempt to connect by %s\n", names);
+					srand(time(NULL));
 					send_challenge(rand()%256, afd, n);
+					
 					bzero(command, strlen(command));
 				}
 				

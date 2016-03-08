@@ -9,6 +9,29 @@
 
 #define max(A,B) ((A)>=(B)?(A):(B))
 
+int binary_to_int(int num){
+	int binary_num, decimal_num = 0, base = 1, rem;
+    binary_num = num;
+    while (num > 0)
+    {
+        rem = num % 10;
+        decimal_num = decimal_num + rem * base;
+        num = num / 10 ;
+        base = base * 2;
+    }
+    return decimal_num;
+}
+
+int convert_to_binary(int n){
+	int rem, i = 1, binary = 0;
+    while(n != 0){
+		rem = n%2;
+        n /= 2;
+        binary += rem*i;
+        i *= 10;
+    }
+    return binary;
+}
 
 int check_dot(char*names){
 	char*pointer_to_dot=strchr(names, '.');

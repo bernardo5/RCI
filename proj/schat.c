@@ -83,11 +83,23 @@ void find(char**buf, char*names){
 	return;
 }
 
+void send_challenge(int challenge_number, int newfd, int n){
+	int nw;
+	int binary;
+	char buffer[10];
+	printf("challenge number: %d\n", challenge_number);
+	binary=convert_to_binary(challenge_number);
+	printf("binary: %d\n", binary);
+	sprintf(buffer, "%d\n", binary);
+	printf("buffer:%s\n", buffer);
+	if((nw=write(newfd,buffer,n))<=0)exit(1);
+	printf("buffer:%s\n", buffer);
+	return;
+}
+
 int main(int argc, char**argv)
 {
 	check_args(argc, argv);
-	int number;
-	int binary;
 	/*udp socket*/
 	int fd_udp, n_udp, leav=1, n_client; 
 	socklen_t addrlen_udp;
@@ -267,6 +279,7 @@ int main(int argc, char**argv)
 										printf("error sending message\n");
 										exit(1);
 									}else printf("sent: %s\n", allen);
+									
 								}
 								
 								
@@ -337,6 +350,14 @@ int main(int argc, char**argv)
 			if((n=read(afd,buffer,128))!=0)
 			{if(n==-1)exit(1);//error
 				printf("message received: %s\n", buffer);//error
+				sscanf(buffer, "%s %s", command, names);
+				if(strcmp(command, "NAME")==0){
+					printf("entrou no nome\n");
+					printf("Attempt to connect by %s\n", names);
+					send_challenge(rand()%256, afd, n);
+					bzero(command, strlen(command));
+				}
+				
 			}
 			else{close(afd); state=idle;}//connection closed by peer
 		}

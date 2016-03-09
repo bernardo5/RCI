@@ -71,8 +71,23 @@ void check_args(int argc, char**argv){
 	return;
 }
 
-void join(char**buf, char**argv){
-	sprintf(*buf, "%s %s%s%s%s%s\n","REG", argv[2], ";", argv[4], ";", argv[6]);
+void join(char**buffer_udp, char**argv, int *n_udp, int fd_udp, int *leav, struct sockaddr_in addr_udp, socklen_t *addrlen_udp){
+	
+	sprintf(*buffer_udp, "%s %s%s%s%s%s\n","REG", argv[2], ";", argv[4], ";", argv[6]);
+	
+	(*n_udp)=sendto(fd_udp, (*buffer_udp), strlen((*buffer_udp)), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
+	if((*n_udp)==-1) exit(1);//error
+	/*receive echo part*/
+	(*addrlen_udp)=sizeof(addr_udp);				
+	printf("going to rcvfrom\n");
+				
+	(*n_udp)=recvfrom(fd_udp, (*buffer_udp), 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
+	if((*n_udp)==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	(*buffer_udp)[(*n_udp)]='\0';
+	printf("%s\n", (*buffer_udp));
+	(*leav)=0;
 	return;
 }
 
@@ -279,26 +294,9 @@ int main(int argc, char**argv)
 		
 		if(FD_ISSET(fileno(stdin), &rfds)){
 			fgets(keyboard, 45, stdin);
-			/****************************************/
 			if(sscanf(keyboard, "%s", command)==1){
 				if(strcmp(command, "join")==0){
-					join(&buffer_udp, argv);
-					n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
-					if(n_udp==-1) exit(1);//error
-					/*receive echo part*/
-					addrlen_udp=sizeof(addr_udp);				
-					printf("going to rcvfrom\n");
-					/***************************************************************/
-					
-					n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
-					if(n_udp==-1) exit(1);//error
-					printf("answer to echo\n");
-					write(1, "echo: ",6);//stdout
-					buffer_udp[n_udp]='\0';
-					printf("%s\n", buffer_udp);
-					leav=0;
-					
-		/*************************************************************/
+					join(&buffer_udp, argv, &n_udp, fd_udp, &leav, addr_udp, &addrlen_udp);
 					
 					}else if(strcmp(command, "find")==0){
 						find(&buffer_udp, keyboard, &names, &command, &n_udp, fd_udp, addr_udp, &addrlen_udp);

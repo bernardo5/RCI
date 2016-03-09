@@ -10,6 +10,8 @@
 
 #define max(A,B) ((A)>=(B)?(A):(B))
 
+typedef enum{idle, busy} STATE;
+
 int binary_to_int(int num){
 	int binary_num, decimal_num = 0, base = 1, rem;
     binary_num = num;
@@ -142,6 +144,12 @@ int get_answer_file(int afd, int line, char*name){
 	return 0;
 }
 
+void disconnect(int*afd, STATE*s){
+	close((*afd));
+	*s=idle;
+	return;
+}
+
 int main(int argc, char**argv)
 {
 	check_args(argc, argv);
@@ -166,7 +174,7 @@ int main(int argc, char**argv)
 	int fd, newfd, afd, fd_client;
 	socklen_t addrlen, addrlen_client;
 	fd_set rfds;
-	enum {idle, busy} state;
+	STATE state;
 	//int c=0;
 	int maxfd,counter;
 	struct sockaddr_in addr, addr_client;
@@ -330,13 +338,11 @@ int main(int argc, char**argv)
 											printf("line:%d\n", atoi(buffer));
 											strcpy(allen, strcat(key, ".txt"));
 											if(get_answer_file(fd_client, binary_to_int(atoi(buffer)), allen)){
-												close(afd);
-												state=idle;
+												disconnect(&afd, &state);
 											}
 											/*reverse authentication*/
 											printf("segundo\n");
-											if(send_challenge(rand()%256, fd_client, n, allen)){close(afd);
-													state=idle;}
+											if(send_challenge(rand()%256, fd_client, n, allen)){disconnect(&afd, &state);}
 										}
 									 }
 									
@@ -367,8 +373,7 @@ int main(int argc, char**argv)
 					}else if((strcmp(command, "disconnect")==0)){
 						if(state==busy){
 							printf("wants to disconnect\n");
-							close(afd);
-							state=idle;
+							disconnect(&afd, &state);
 						}
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){
@@ -386,7 +391,8 @@ int main(int argc, char**argv)
 							write(1, "echo: ",6);//stdout
 							buffer_udp[n_udp]='\0';
 							printf("%s\n", buffer_udp);
-						}				
+						}			
+							if(state==busy) disconnect(&afd, &state);
 							close(fd_udp);
 							exit(0);
 							//}else printf("please leave before exit\n");
@@ -416,8 +422,7 @@ int main(int argc, char**argv)
 						printf("entrou no nome\n");
 						printf("Attempt to connect by %s\n", names);
 						srand(time(NULL));
-						if(send_challenge(rand()%256, afd, n, strcat(names, ".txt"))){close(afd);
-								state=idle;}
+						if(send_challenge(rand()%256, afd, n, strcat(names, ".txt"))){disconnect(&afd, &state);}
 						bzero(command, strlen(command));
 						printf("segundo\n");
 						if((n=read(afd,buffer,128))!=0){
@@ -425,15 +430,14 @@ int main(int argc, char**argv)
 							if(n==0){close(afd); state=idle;}else{
 								printf("line:%d\n", atoi(buffer));
 								if(get_answer_file(afd, binary_to_int(atoi(buffer)), strcat(argv[2], ".txt"))){
-									close(afd);
-									state=idle;
+									disconnect(&afd, &state);
 								}
 							}
 						}
 					}
 					
 				}
-				else{close(afd); state=idle;}//connection closed by peer
+				else{disconnect(&afd, &state);}//connection closed by peer
 			}
 		}
 	}//while(1)

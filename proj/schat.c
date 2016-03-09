@@ -169,6 +169,28 @@ void exi_t(char**argv, char**buffer_udp, int*n_udp, int fd_udp, struct sockaddr_
 	return;
 }
 
+void message(char**allen, char*keyboard, char**command, STATE state, int* fd_client, int afd, int *nw){
+	
+	printf("send message\n");
+	bzero((*allen), strlen((*allen)));
+	if(sscanf(keyboard, "%s %[^\n]s", (*command), (*allen))!=2){
+		printf("not enough arguments\n");
+	}else{
+		if(state==busy){
+			printf("input: %s\n", keyboard);
+			printf("message to send: %s\n", (*allen));
+			(*fd_client)=afd;
+			if(((*nw)=write((*fd_client),(*allen),strlen((*allen))+1))<=0){
+				printf("error sending message\n");
+				exit(1);
+			}else printf("sent: %s\n", (*allen));
+		}
+							
+	}
+	
+	return;
+}
+
 int main(int argc, char**argv)
 {
 	check_args(argc, argv);
@@ -200,13 +222,13 @@ int main(int argc, char**argv)
 	int n, nw;
 	char buffer[128];
 	
-	char keyboard[45];
+	char *keyboard=malloc(45*sizeof(char));
 	char *command=malloc(15*sizeof(char));
 	char*names=malloc(15*sizeof(char));
 	char*key=malloc(15*sizeof(char));
 	
 	char *tcp_ip;
-	char allen[30];
+	char *allen=malloc(30*sizeof(char));
 	int tcp_port;
 	
 
@@ -371,23 +393,8 @@ int main(int argc, char**argv)
 							}
 							
 						}
-					}else if((strcmp(command, "message")==0)/*&&(connected==true)*/){
-						printf("send message\n");
-						bzero(allen, strlen(allen));
-						if(sscanf(keyboard, "%s %[^\n]s", command, allen)!=2){
-							printf("not enough arguments\n");
-						}else{
-							if(state==busy){
-								printf("input: %s\n", keyboard);
-								printf("message to send: %s\n", allen);
-								fd_client=afd;
-								if((nw=write(fd_client,allen,strlen(allen)+1))<=0){
-									printf("error sending message\n");
-									exit(1);
-								}else printf("sent: %s\n", allen);
-							}
-							
-						}
+					}else if((strcmp(command, "message")==0)){
+						message(&allen, keyboard, &command, state, & fd_client, afd, &nw);
 					
 					}else if((strcmp(command, "disconnect")==0)){
 						if(state==busy){

@@ -334,7 +334,7 @@ int main(int argc, char**argv)
 											}
 											/*reverse authentication*/
 											printf("segundo\n");
-											if(send_challenge(rand()%256, fd_client, n, strcat(argv[2], ".txt"))){close(afd);
+											if(send_challenge(rand()%256, fd_client, n, strcat(names, ".txt"))){close(afd);
 													state=idle;}
 										}
 									 }

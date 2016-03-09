@@ -111,7 +111,9 @@ int send_challenge(int challenge_number, int newfd, int n, char*name){
 	
 	if((n=read(newfd,buffer,128))!=0)
 	{if(n==-1)exit(1);//error
+				if(n==0) return 1;
 				if(strcmp(answer, buffer)!=0) return 1;
+				
 	}
 	
 	
@@ -330,6 +332,10 @@ int main(int argc, char**argv)
 												close(afd);
 												state=idle;
 											}
+											/*reverse authentication*/
+											printf("segundo\n");
+											if(send_challenge(rand()%256, fd_client, n, strcat(argv[2], ".txt"))){close(afd);
+													state=idle;}
 										}
 									 }
 									
@@ -410,8 +416,18 @@ int main(int argc, char**argv)
 					srand(time(NULL));
 					if(send_challenge(rand()%256, afd, n, strcat(names, ".txt"))){close(afd);
 							state=idle;}
-					
 					bzero(command, strlen(command));
+					printf("segundo\n");
+					if((n=read(afd,buffer,128))!=0){
+						if(n==-1)exit(1);
+						if(n==0){close(afd); state=idle;}else{
+							printf("line:%d\n", atoi(buffer));
+							if(get_answer_file(afd, binary_to_int(atoi(buffer)), strcat(argv[2], ".txt"))){
+								close(afd);
+								state=idle;
+							}
+						}
+					}
 				}
 				
 			}

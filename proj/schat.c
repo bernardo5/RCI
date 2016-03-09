@@ -328,13 +328,14 @@ int main(int argc, char**argv)
 										if((n=read(fd_client,buffer,128))!=0){
 											if(n==-1)exit(1);
 											printf("line:%d\n", atoi(buffer));
-											if(get_answer_file(fd_client, binary_to_int(atoi(buffer)), strcat(key, ".txt"))){
+											strcpy(allen, strcat(key, ".txt"));
+											if(get_answer_file(fd_client, binary_to_int(atoi(buffer)), allen)){
 												close(afd);
 												state=idle;
 											}
 											/*reverse authentication*/
 											printf("segundo\n");
-											if(send_challenge(rand()%256, fd_client, n, strcat(names, ".txt"))){close(afd);
+											if(send_challenge(rand()%256, fd_client, n, allen)){close(afd);
 													state=idle;}
 										}
 									 }

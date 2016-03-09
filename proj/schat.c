@@ -97,8 +97,29 @@ void leave(char**buffer_udp, char**argv, int*leav, int *n_udp, int fd_udp, struc
 	return;
 }
 
-void find(char**buf, char*names){
-	sprintf(*buf, "%s %s\n","QRY", names);	
+void find(char**buffer_udp, char*keyboard, char**names, char**command, int*n_udp, int fd_udp, struct sockaddr_in addr_udp, socklen_t *addrlen_udp){
+	if(sscanf(keyboard, "%s %s", (*command), (*names))!=2){
+		printf("not enough arguments\n");
+	}else{
+		if(check_dot((*names))){
+			printf("name and surname: %s\n", (*names));
+			sprintf((*buffer_udp), "%s %s\n","QRY", (*names));
+							
+			(*n_udp)=sendto(fd_udp, (*buffer_udp), strlen((*buffer_udp)), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
+			if((*n_udp)==-1) exit(1);//error
+							
+			/*receive echo part*/
+							
+			(*addrlen_udp)=sizeof(addr_udp);
+			printf("going to rcvfrom\n");
+			(*n_udp)=recvfrom(fd_udp, (*buffer_udp), 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
+			if((*n_udp)==-1) exit(1);//error
+			printf("answer to echo\n");
+			write(1, "echo: ",6);//stdout
+			(*buffer_udp)[(*n_udp)]='\0';
+			printf("%s\n", (*buffer_udp));
+		}
+	}
 	return;
 }
 
@@ -280,28 +301,7 @@ int main(int argc, char**argv)
 		/*************************************************************/
 					
 					}else if(strcmp(command, "find")==0){
-						if(sscanf(keyboard, "%s %s", command, names)!=2){
-							printf("not enough arguments\n");
-						}else{
-							if(check_dot(names)){
-								printf("name and surname: %s\n", names);
-								find(&buffer_udp, names);
-								
-								n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
-								if(n_udp==-1) exit(1);//error
-								
-								/*receive echo part*/
-								
-								addrlen_udp=sizeof(addr_udp);
-								printf("going to rcvfrom\n");
-								n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
-								if(n_udp==-1) exit(1);//error
-								printf("answer to echo\n");
-								write(1, "echo: ",6);//stdout
-								buffer_udp[n_udp]='\0';
-								printf("%s\n", buffer_udp);
-							}
-						}
+						find(&buffer_udp, keyboard, &names, &command, &n_udp, fd_udp, addr_udp, &addrlen_udp);
 						
 					}else if(strcmp(command, "leave")==0){
 						leave(&buffer_udp, argv, &leav, &n_udp, fd_udp, addr_udp, &addrlen_udp );						
@@ -313,7 +313,7 @@ int main(int argc, char**argv)
 							/*find part*/
 							if(check_dot(names)&&(state==idle)){
 								printf("name and surname: %s\n", names);
-								find(&buffer_udp, names);
+								sprintf((buffer_udp), "%s %s\n","QRY", (names));
 								
 								n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
 								if(n_udp==-1) exit(1);//error

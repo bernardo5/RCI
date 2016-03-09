@@ -405,34 +405,36 @@ int main(int argc, char**argv)
 				close(newfd); break;
 			}
 		}
-		if(FD_ISSET(afd,&rfds))
-		{
-			if((n=read(afd,buffer,128))!=0)
-			{if(n==-1)exit(1);//error
-				printf("message received: %s\n", buffer);//error
-				sscanf(buffer, "%s %s", command, names);
-				if(strcmp(command, "NAME")==0){
-					printf("entrou no nome\n");
-					printf("Attempt to connect by %s\n", names);
-					srand(time(NULL));
-					if(send_challenge(rand()%256, afd, n, strcat(names, ".txt"))){close(afd);
-							state=idle;}
-					bzero(command, strlen(command));
-					printf("segundo\n");
-					if((n=read(afd,buffer,128))!=0){
-						if(n==-1)exit(1);
-						if(n==0){close(afd); state=idle;}else{
-							printf("line:%d\n", atoi(buffer));
-							if(get_answer_file(afd, binary_to_int(atoi(buffer)), strcat(argv[2], ".txt"))){
-								close(afd);
-								state=idle;
+		if(state==busy){	
+			if(FD_ISSET(afd,&rfds))
+			{
+				if((n=read(afd,buffer,128))!=0)
+				{if(n==-1)exit(1);//error
+					printf("message received: %s\n", buffer);//error
+					sscanf(buffer, "%s %s", command, names);
+					if(strcmp(command, "NAME")==0){
+						printf("entrou no nome\n");
+						printf("Attempt to connect by %s\n", names);
+						srand(time(NULL));
+						if(send_challenge(rand()%256, afd, n, strcat(names, ".txt"))){close(afd);
+								state=idle;}
+						bzero(command, strlen(command));
+						printf("segundo\n");
+						if((n=read(afd,buffer,128))!=0){
+							if(n==-1)exit(1);
+							if(n==0){close(afd); state=idle;}else{
+								printf("line:%d\n", atoi(buffer));
+								if(get_answer_file(afd, binary_to_int(atoi(buffer)), strcat(argv[2], ".txt"))){
+									close(afd);
+									state=idle;
+								}
 							}
 						}
 					}
+					
 				}
-				
+				else{close(afd); state=idle;}//connection closed by peer
 			}
-			else{close(afd); state=idle;}//connection closed by peer
 		}
 	}//while(1)
 	 close(fd);

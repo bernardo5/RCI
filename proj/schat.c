@@ -150,6 +150,25 @@ void disconnect(int*afd, STATE*s){
 	return;
 }
 
+void exi_t(char**argv, char**buffer_udp, int*n_udp, int fd_udp, struct sockaddr_in addr_udp, socklen_t *addrlen_udp){
+	leave(&(*buffer_udp), argv);
+	*n_udp=sendto(fd_udp, (*buffer_udp), strlen((*buffer_udp)), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
+	if((*n_udp)==-1) exit(1);//error
+							
+	/*receive echo part*/
+							
+	*addrlen_udp=sizeof(addr_udp);
+	printf("going to rcvfrom\n");
+	(*n_udp)=recvfrom(fd_udp, (*buffer_udp), 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
+	if((*n_udp)==-1) exit(1);//error
+	printf("answer to echo\n");
+	write(1, "echo: ",6);//stdout
+	(*buffer_udp)[(*n_udp)]='\0';
+	printf("%s\n", (*buffer_udp));
+	
+	return;
+}
+
 int main(int argc, char**argv)
 {
 	check_args(argc, argv);
@@ -377,20 +396,7 @@ int main(int argc, char**argv)
 						}
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){
-							leave(&buffer_udp, argv);
-							n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
-							if(n_udp==-1) exit(1);//error
-							
-							/*receive echo part*/
-							
-							addrlen_udp=sizeof(addr_udp);
-							printf("going to rcvfrom\n");
-							n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
-							if(n_udp==-1) exit(1);//error
-							printf("answer to echo\n");
-							write(1, "echo: ",6);//stdout
-							buffer_udp[n_udp]='\0';
-							printf("%s\n", buffer_udp);
+							exi_t(argv, &buffer_udp, &n_udp, fd_udp, addr_udp, &addrlen_udp);
 						}			
 							if(state==busy) disconnect(&afd, &state);
 							close(fd_udp);

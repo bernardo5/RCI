@@ -224,6 +224,59 @@ void message(char**allen, char*keyboard, char**command, STATE state, int* fd_cli
 	return;
 }
 
+void connect_(char**buffer, int *n, int*nw, char**argv, int *afd, int *n_client, int *fd_client,struct sockaddr_in* addr_client, socklen_t *addrlen_client, int*tcp_port, char**tcp_ip, STATE *state, char*keyboard, char**buffer_udp, char**names, char**command, char**allen, char**key, int*n_udp, int fd_udp,struct sockaddr_in addr_udp, socklen_t *addrlen_udp){
+	if(sscanf(keyboard, "%s %s %s", (*command), (*names), (*key))!=3){
+		 printf("wrong arguments\n");
+		 return;
+	 }
+	
+	if((*state)==idle){
+		find(&(*buffer_udp), keyboard, &(*names), &(*command), &(*n_udp), fd_udp, addr_udp, &(*addrlen_udp));
+		
+		/* *****************************************************/
+			/*separate arguments*/
+			sscanf((*buffer_udp), "%s %[^;];%s", (*command), (*names), (*allen));
+			printf("tcp_ip: %s\n", (*allen));
+			char *token;
+			(*tcp_ip) = strtok((*allen), ";");
+			token=strtok(NULL, ";");
+			*tcp_port=atoi(token);
+								
+			printf("%s %s %s %d\n", (*command), (*names), (*tcp_ip), (*tcp_port));
+						
+			/* **************************************************** */
+			/*tcp connect*/
+			if(((*fd_client)=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket client\n");exit(1);}//error
+			memset((void*)&(*addr_client),(int)'\0',sizeof(*addr_client));
+			(*addr_client).sin_family=AF_INET;
+			inet_aton((*tcp_ip), &(*addr_client).sin_addr);
+			(*addr_client).sin_port=htons((*tcp_port));
+			(*n_client)=connect((*fd_client),(struct sockaddr*)&(*addr_client), sizeof((*addr_client)));
+			if((*n_client)==-1){printf("erro no connect\n"); exit(1);}else{
+				printf("connected\n");(*afd)=(*fd_client);(*state)=busy;/*connected=true;*/
+				sprintf((*allen), "%s %s\n", "NAME", argv[2]);
+				if(((*nw)=write((*fd_client),(*allen),strlen((*allen))+1))<=0){
+					printf("error sending message\n");
+					exit(1);
+				}else{
+					printf("sent: %s\n", (*allen));
+					if(((*n)=read((*fd_client),(*buffer),128))!=0){
+						if((*n)==-1)exit(1);
+						printf("line:%d\n", atoi((*buffer)));
+						strcpy((*allen), strcat((*key), ".txt"));
+						if(get_answer_file((*fd_client), binary_to_int(atoi((*buffer))), (*allen))){
+							disconnect(&(*afd), &(*state));
+						}
+						/*reverse authentication*/
+						printf("segundo\n");
+						if(send_challenge(rand()%256, (*fd_client), (*n), (*allen))){disconnect(&(*afd), &(*state));}
+					}
+				}					
+			}
+	}		
+	return;
+}
+
 int main(int argc, char**argv)
 {
 	check_args(argc, argv);
@@ -253,7 +306,7 @@ int main(int argc, char**argv)
 	int maxfd,counter;
 	struct sockaddr_in addr, addr_client;
 	int n, nw;
-	char buffer[128];
+	char *buffer=malloc(128*sizeof(char));
 	
 	char *keyboard=malloc(45*sizeof(char));
 	char *command=malloc(15*sizeof(char));
@@ -304,75 +357,11 @@ int main(int argc, char**argv)
 					}else if(strcmp(command, "leave")==0){
 						leave(&buffer_udp, argv, &leav, &n_udp, fd_udp, addr_udp, &addrlen_udp );						
 					}else if((strcmp(command, "connect")==0)/*&&(connected==false)*/){
-						if(sscanf(keyboard, "%s %s %s", command, names, key)!=3){
-							printf("not enough arguments\n");
-						}else{
-							printf("%s %s %s\n", command, names, key);
-							/*find part*/
-							if(check_dot(names)&&(state==idle)){
-								printf("name and surname: %s\n", names);
-								sprintf((buffer_udp), "%s %s\n","QRY", (names));
-								
-								n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
-								if(n_udp==-1) exit(1);//error
-								
-								/*receive echo part*/
-								
-								addrlen_udp=sizeof(addr_udp);
-								printf("going to rcvfrom\n");
-								n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &addrlen_udp);
-								if(n_udp==-1) exit(1);//error
-								printf("answer to echo\n");
-								write(1, "echo: ",6);//stdout
-								buffer_udp[n_udp]='\0';
-								printf("%s\n", buffer_udp);
-								
-								/* *****************************************************/
-								/*separate arguments*/
-								sscanf(buffer_udp, "%s %[^;];%s", command, names, allen);
-								printf("tcp_ip: %s\n", allen);
-								char *token;
-								tcp_ip = strtok(allen, ";");
-								token=strtok(NULL, ";");
-								tcp_port=atoi(token);
-								
-								printf("%s %s %s %d\n", command, names, tcp_ip, tcp_port);
-								
-								/* **************************************************** */
-								/*tcp connect*/
-								if((fd_client=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket client\n");exit(1);}//error
-								memset((void*)&addr_client,(int)'\0',sizeof(addr_client));
-								addr_client.sin_family=AF_INET;
-								inet_aton(tcp_ip, &addr_client.sin_addr);
-								addr_client.sin_port=htons(tcp_port);
-								n_client=connect(fd_client,(struct sockaddr*)&addr_client, sizeof(addr_client));
-								if(n_client==-1){printf("erro no connect\n"); exit(1);}else{
-									printf("connected\n");afd=fd_client;state=busy;/*connected=true;*/
-									sprintf(allen, "%s %s\n", "NAME", argv[2]);
-									if((nw=write(fd_client,allen,strlen(allen)+1))<=0){
-										printf("error sending message\n");
-										exit(1);
-									}else{
-										 printf("sent: %s\n", allen);
-										if((n=read(fd_client,buffer,128))!=0){
-											if(n==-1)exit(1);
-											printf("line:%d\n", atoi(buffer));
-											strcpy(allen, strcat(key, ".txt"));
-											if(get_answer_file(fd_client, binary_to_int(atoi(buffer)), allen)){
-												disconnect(&afd, &state);
-											}
-											/*reverse authentication*/
-											printf("segundo\n");
-											if(send_challenge(rand()%256, fd_client, n, allen)){disconnect(&afd, &state);}
-										}
-									 }
-									
-								}
-								
-								
-							}
-							
-						}
+						connect_(&buffer, &n, &nw, argv,
+							&afd, &n_client, &fd_client,& addr_client,
+							 &addrlen_client, &tcp_port, &tcp_ip, &state, keyboard,
+							  &buffer_udp, &names, &command, &allen, &key,
+							   &n_udp, fd_udp, addr_udp, &addrlen_udp);
 					}else if((strcmp(command, "message")==0)){
 						message(&allen, keyboard, &command, state, & fd_client, afd, &nw);
 					

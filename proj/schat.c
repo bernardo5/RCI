@@ -84,35 +84,60 @@ void find(char**buf, char*names){
 	return;
 }
 
-void send_challenge(int challenge_number, int newfd, int n){
+int send_challenge(int challenge_number, int newfd, int n, char*name){
 	int nw;
 	int binary;
 	char buffer[10];
 	printf("challenge number: %d\n", challenge_number);
 	binary=convert_to_binary(challenge_number);
 	printf("binary: %d\n", binary);
-	sprintf(buffer, "%d\n", binary);
+	sprintf(buffer, "%08d\n", binary);
 	printf("buffer:%s\n", buffer);
 	if((nw=write(newfd,buffer,n))<=0)exit(1);
 	printf("buffer:%s\n", buffer);
-	return;
+	/*get answer to compare*/
+	char answer[10];
+	FILE *fp;
+	
+	fp = fopen(name,"r");
+		if(fp == NULL){
+			printf("Erro na abertura do ficheiro para escrita\n");
+			return 1;
+		}
+		n=1;
+	while((fgets(answer,sizeof(answer),fp)!=NULL) && n!=challenge_number) n++;	
+	printf("answer: %s in line %d\n", answer, n);
+	fclose(fp);	
+	
+	if((n=read(newfd,buffer,128))!=0)
+	{if(n==-1)exit(1);//error
+				if(strcmp(answer, buffer)!=0) return 1;
+	}
+	
+	
+	return 0;
 }
 
-void get_answer_file(int afd, int line){
+int get_answer_file(int afd, int line, char*name){
 	int n=1;
 	char buffer[128];
 	FILE *fp;
 	
-	fp = fopen("keyfile.txt","r");
+	fp = fopen(name,"r");
 		if(fp == NULL){
 			printf("Erro na abertura do ficheiro para escrita\n");
-			exit(-1);
+			return 1;
 		}
 	while((fgets(buffer,sizeof(buffer),fp)!=NULL) && n!=line) n++;	
 	printf("answer: %s in line %d\n", buffer, n);
 	fclose(fp);	
 	
-	return;
+	if((n=write(afd,buffer,strlen(buffer)+1))<=0){
+									printf("error sending message\n");
+									exit(1);
+								}else printf("sent: %s\n", buffer);
+	
+	return 0;
 }
 
 int main(int argc, char**argv)
@@ -301,7 +326,10 @@ int main(int argc, char**argv)
 										if((n=read(fd_client,buffer,128))!=0){
 											if(n==-1)exit(1);
 											printf("line:%d\n", atoi(buffer));
-											get_answer_file(fd_client, binary_to_int(atoi(buffer)));
+											if(get_answer_file(fd_client, binary_to_int(atoi(buffer)), strcat(key, ".txt"))){
+												close(afd);
+												state=idle;
+											}
 										}
 									 }
 									
@@ -380,7 +408,8 @@ int main(int argc, char**argv)
 					printf("entrou no nome\n");
 					printf("Attempt to connect by %s\n", names);
 					srand(time(NULL));
-					send_challenge(rand()%256, afd, n);
+					if(send_challenge(rand()%256, afd, n, strcat(names, ".txt"))){close(afd);
+							state=idle;}
 					
 					bzero(command, strlen(command));
 				}

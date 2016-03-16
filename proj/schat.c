@@ -288,7 +288,9 @@ int main(int argc, char**argv)
 	
 	
 	fd_udp=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
-	if(fd_udp==-1) exit(-1);/*error*/
+	if(fd_udp==-1){
+	 exit(-1);/*error*/
+	}
 	
 	memset((void*)&addr_udp, (int)'\0', sizeof(addr_udp));
 	addr_udp.sin_family=AF_INET;
@@ -342,7 +344,7 @@ int main(int argc, char**argv)
 		FD_SET(fileno(stdin), &rfds);
 		if(state==busy){FD_SET(afd,&rfds);maxfd=max(maxfd,afd);}
 		
-		counter=select(fileno(stdin)+fd_client+maxfd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
+		counter=select(/*fileno(stdin)+fd_client+*/maxfd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
 		if(counter<=0)exit(1);//errror
 		
 		if(FD_ISSET(fileno(stdin), &rfds)){

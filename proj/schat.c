@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <time.h>
+#include <signal.h>
 
 #define max(A,B) ((A)>=(B)?(A):(B))
 
@@ -147,7 +148,9 @@ int send_challenge(int challenge_number, int newfd, int n, char*name){
 	printf("binary: %d\n", binary);
 	sprintf(buffer, "%08d\n", binary);
 	printf("buffer:%s\n", buffer);
-	if((nw=write(newfd,buffer,n))<=0)exit(1);
+	if((nw=write(newfd,buffer,n))<=0){
+		return 1;
+	}
 	printf("buffer:%s\n", buffer);
 	/*get answer to compare*/
 	char answer[10];
@@ -164,10 +167,12 @@ int send_challenge(int challenge_number, int newfd, int n, char*name){
 	fclose(fp);	
 	
 	if((n=read(newfd,buffer,128))!=0)
-	{if(n==-1)exit(1);//error
+	{if(n==-1){
+		printf("read\n");
+		exit(1);//error
+		}
 				if(n==0) return 1;
-				if(strcmp(answer, buffer)!=0) return 1;
-				
+				if(strcmp(answer, buffer)!=0) return 1;	
 	}
 	
 	
@@ -262,14 +267,18 @@ void connect_(char**buffer, int *n, int*nw, char**argv, int *afd, int *n_client,
 					printf("sent: %s\n", (*allen));
 					if(((*n)=read((*fd_client),(*buffer),128))!=0){
 						if((*n)==-1)exit(1);
-						printf("line:%d\n", atoi((*buffer)));
-						strcpy((*allen), strcat((*key), ".txt"));
-						if(get_answer_file((*fd_client), binary_to_int(atoi((*buffer))), (*allen))){
-							disconnect(&(*afd), &(*state));
-						}
-						/*reverse authentication*/
-						printf("segundo\n");
-						if(send_challenge(rand()%256, (*fd_client), (*n), (*allen))){disconnect(&(*afd), &(*state));}
+						if((*n)!=0){
+							printf("entrou\n");
+							printf("line:%d\n", atoi((*buffer)));
+							strcpy((*allen), strcat((*key), ".txt"));
+							if(get_answer_file((*fd_client), binary_to_int(atoi((*buffer))), (*allen))){
+								disconnect(&(*afd), &(*state));
+							}else{
+							/*reverse authentication*/
+							printf("segundo\n");
+							if(send_challenge(rand()%256, (*fd_client), (*n), (*allen))){disconnect(&(*afd), &(*state));}
+							}
+						}else disconnect(&(*afd), &(*state));
 					}
 				}					
 			}
@@ -319,6 +328,8 @@ int main(int argc, char**argv)
 	char *allen=malloc(30*sizeof(char));
 	int tcp_port;
 	
+	void (*old_handler)(int);//interupt handler
+	if((old_handler=signal(SIGPIPE, SIG_IGN))==SIG_ERR)exit(1);
 
 	if((fd=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket\n");exit(1);}//error
 
@@ -406,18 +417,22 @@ int main(int argc, char**argv)
 						printf("entrou no nome\n");
 						printf("Attempt to connect by %s\n", names);
 						srand(time(NULL));
-						if(send_challenge(rand()%256, afd, n, strcat(names, ".txt"))){disconnect(&afd, &state);}
-						bzero(command, strlen(command));
-						printf("segundo\n");
-						if((n=read(afd,buffer,128))!=0){
-							if(n==-1)exit(1);
-							if(n==0){close(afd); state=idle;}else{
-								printf("line:%d\n", atoi(buffer));
-								if(get_answer_file(afd, binary_to_int(atoi(buffer)), strcat(argv[2], ".txt"))){
-									disconnect(&afd, &state);
+						if(send_challenge(rand()%256, afd, n, strcat(names, ".txt"))){
+							disconnect(&afd, &state);
+						}else{
+							bzero(command, strlen(command));
+							printf("segundo\n");
+							if((n=read(afd,buffer,128))!=0){
+								if(n==-1)exit(1);
+								if(n==0){close(afd); state=idle;}else{
+									printf("line:%d\n", atoi(buffer));
+									if(get_answer_file(afd, binary_to_int(atoi(buffer)), strcat(argv[2], ".txt"))){
+										disconnect(&afd, &state);
+									}
 								}
 							}
 						}
+						
 					}
 					
 				}

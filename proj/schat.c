@@ -316,7 +316,6 @@ int main(int argc, char**argv)
 	socklen_t addrlen, addrlen_client;
 	fd_set rfds;
 	STATE state;
-	//int c=0;
 	int maxfd,counter;
 	struct sockaddr_in addr, addr_client;
 	int n, nw;
@@ -350,15 +349,13 @@ int main(int argc, char**argv)
 	}
 	if(listen(fd,5)==-1){printf("listen\n");exit(1);}//error
 	state=idle;
-	//c=0;
 	while(1){
 		FD_ZERO(&rfds);
 		FD_SET(fd,&rfds);maxfd=fd;
-		//FD_SET(fd_client,&rfds);
 		FD_SET(fileno(stdin), &rfds);
 		if(state==busy){FD_SET(afd,&rfds);maxfd=max(maxfd,afd);}
 		
-		counter=select(/*fileno(stdin)+fd_client+*/maxfd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
+		counter=select(maxfd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
 		if(counter<=0)exit(1);//errror
 		
 		if(FD_ISSET(fileno(stdin), &rfds)){
@@ -372,7 +369,7 @@ int main(int argc, char**argv)
 						
 					}else if(strcmp(command, "leave")==0){
 						leave(&buffer_udp, argv, &leav, &n_udp, fd_udp, addr_udp, &addrlen_udp );						
-					}else if((strcmp(command, "connect")==0)/*&&(connected==false)*/){
+					}else if((strcmp(command, "connect")==0)){
 						connect_(&buffer, &n, &nw, argv,
 							&afd, &n_client, &fd_client,& addr_client,
 							 &addrlen_client, &tcp_port, &tcp_ip, &state, keyboard,
@@ -392,6 +389,12 @@ int main(int argc, char**argv)
 						}			
 							if(state==busy) disconnect(&afd, &state);
 							close(fd_udp);
+							free(buffer);
+							free(keyboard);
+							free(command);
+							free(names);
+							free(key);
+							free(allen);	
 							exit(0);
 							//}else printf("please leave before exit\n");
 					}

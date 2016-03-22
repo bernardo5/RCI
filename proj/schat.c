@@ -245,54 +245,63 @@ void message(char*keyboard, STATE state, int* fd_client, int afd){
 	return;
 }
 
-void connect_(char**buffer, int *n, int*nw, char**argv, int *afd, int *n_client, int *fd_client,struct sockaddr_in* addr_client, socklen_t *addrlen_client, int*tcp_port, char**tcp_ip, STATE *state, char*keyboard, char**buffer_udp, char**names, char**command, char**allen, char**key, int*n_udp, int fd_udp,struct sockaddr_in addr_udp, socklen_t *addrlen_udp){
-	if(sscanf(keyboard, "%s %s %s", (*command), (*names), (*key))!=3){
+void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_client, socklen_t *addrlen_client, STATE *state, char*keyboard, int fd_udp,struct sockaddr_in addr_udp, socklen_t *addrlen_udp){
+	char* command=malloc(15*sizeof(char));
+	char* names=malloc(15*sizeof(char));
+	char* key=malloc(15*sizeof(char));
+	char*buf=malloc(30*sizeof(char));
+	int n, nw, n_client, tcp_port;
+	char*tcp_ip;
+	char*buffer=malloc(128*sizeof(char));
+	char*buffer_udp=malloc(128*sizeof(char));
+	
+	if(sscanf(keyboard, "%s %s %s", command, names, key)!=3){
 		 printf("wrong arguments\n");
 		 return;
 	 }
 	
 	if((*state)==idle){
-		find(&(*buffer_udp), keyboard, fd_udp, addr_udp, &(*addrlen_udp));
-		if((strcmp((*buffer_udp), "NOK - Surname not registered")!=0)&&(strcmp((*buffer_udp), "NOK - User not registered\n")!=0)){
+		find(&buffer_udp, keyboard, fd_udp, addr_udp, &(*addrlen_udp));
+		if((strcmp(buffer_udp, "NOK - Surname not registered")!=0)&&(strcmp(buffer_udp, "NOK - User not registered\n")!=0)){
 		/* *****************************************************/
 			/*separate arguments*/
-			sscanf((*buffer_udp), "%s %[^;];%s", (*command), (*names), (*allen));
-			printf("tcp_ip: %s\n", (*allen));
+			sscanf(buffer_udp, "%s %[^;];%s", command, names, buf);
+			printf("tcp_ip: %s\n", buf);
 			char *token;
-			(*tcp_ip) = strtok((*allen), ";");
+			tcp_ip = strtok(buf, ";");
 			token=strtok(NULL, ";");
-			*tcp_port=atoi(token);
+			tcp_port=atoi(token);
 								
-			printf("%s %s %s %d\n", (*command), (*names), (*tcp_ip), (*tcp_port));
+			printf("%s %s %s %d\n", command, names, tcp_ip, tcp_port);
 						
 			/* **************************************************** */
 			/*tcp connect*/
-			if(((*fd_client)=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket client\n");exit(1);}//error
+			if((fd_client=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket client\n");exit(1);}//error
 			memset((void*)&(*addr_client),(int)'\0',sizeof(*addr_client));
 			(*addr_client).sin_family=AF_INET;
-			inet_aton((*tcp_ip), &(*addr_client).sin_addr);
-			(*addr_client).sin_port=htons((*tcp_port));
-			(*n_client)=connect((*fd_client),(struct sockaddr*)&(*addr_client), sizeof((*addr_client)));
-			if((*n_client)==-1){printf("erro no connect\n"); exit(1);}else{
-				printf("connected\n");(*afd)=(*fd_client);(*state)=busy;/*connected=true;*/
-				sprintf((*allen), "%s %s\n", "NAME", argv[2]);
-				if(((*nw)=write((*fd_client),(*allen),strlen((*allen))+1))<=0){
+			inet_aton(tcp_ip, &(*addr_client).sin_addr);
+			(*addr_client).sin_port=htons(tcp_port);
+			n_client=connect(fd_client,(struct sockaddr*)&(*addr_client), sizeof((*addr_client)));
+			if(n_client==-1){printf("erro no connect\n"); exit(1);}else{
+				printf("connected\n");(*afd)=fd_client;(*state)=busy;/*connected=true;*/
+				sprintf(buf, "%s %s\n", "NAME", argv[2]);
+				if((nw=write(fd_client,buf,strlen(buf)+1))<=0){
 					printf("error sending message\n");
 					exit(1);
 				}else{
-					printf("sent: %s\n", (*allen));
-					if(((*n)=read((*fd_client),(*buffer),128))!=0){
-						if((*n)==-1)exit(1);
-						if((*n)!=0){
+					printf("sent: %s\n", buf);
+					if((n=read(fd_client,buffer,128))!=0){
+						if(n==-1)exit(1);
+						if(n!=0){
 							printf("entrou\n");
-							printf("line:%d\n", atoi((*buffer)));
-							strcpy((*allen), strcat((*key), ".txt"));
-							if(get_answer_file((*fd_client), binary_to_int(atoi((*buffer))), (*allen))){
+							printf("line:%d\n", atoi(buffer));
+							strcpy(buf, strcat(key, ".txt"));
+							if(get_answer_file(fd_client, binary_to_int(atoi(buffer)), buf)){
 								disconnect(&(*afd), &(*state));
 							}else{
 							/*reverse authentication*/
 							printf("segundo\n");
-							if(send_challenge(rand()%256, (*fd_client), (*n), (*allen))){disconnect(&(*afd), &(*state));}
+							if(send_challenge(rand()%256, fd_client, n, buf)){disconnect(&(*afd), &(*state));}
 							}
 						}else disconnect(&(*afd), &(*state));
 					}
@@ -301,7 +310,13 @@ void connect_(char**buffer, int *n, int*nw, char**argv, int *afd, int *n_client,
 		}else{
 			printf("NOK-Connection refused...\n");
 		}
-	}		
+	}	
+	free(names);
+	free(key);
+	free(command);	
+	free(buf);
+	free(buffer_udp);
+	free(buffer);
 	return;
 }
 
@@ -319,7 +334,7 @@ int main(int argc, char**argv)
 {
 	check_args(argc, argv);
 	/*udp socket*/
-	int fd_udp, n_udp, leav=1, n_client; 
+	int fd_udp, leav=1; 
 	socklen_t addrlen_udp;
 	struct sockaddr_in addr_udp;
 	char* buffer_udp=malloc(128*sizeof(char));
@@ -352,9 +367,7 @@ int main(int argc, char**argv)
 	char*names=malloc(15*sizeof(char));
 	char*key=malloc(15*sizeof(char));
 	
-	char *tcp_ip;
 	char *allen=malloc(30*sizeof(char));
-	int tcp_port;
 	
 	void (*old_handler)(int);//interupt handler
 	if((old_handler=signal(SIGPIPE, SIG_IGN))==SIG_ERR)exit(1);
@@ -396,11 +409,8 @@ int main(int argc, char**argv)
 					}else if(strcmp(command, "leave")==0){
 						leave(argv, &leav, fd_udp, addr_udp, &addrlen_udp );						
 					}else if((strcmp(command, "connect")==0)){
-						connect_(&buffer, &n, &nw, argv,
-							&afd, &n_client, &fd_client,& addr_client,
-							 &addrlen_client, &tcp_port, &tcp_ip, &state, keyboard,
-							  &buffer_udp, &names, &command, &allen, &key,
-							   &n_udp, fd_udp, addr_udp, &addrlen_udp);
+						connect_(argv,	&afd, fd_client,& addr_client,
+							 &addrlen_client, &state, keyboard,fd_udp, addr_udp, &addrlen_udp);
 					}else if((strcmp(command, "message")==0)){
 						message(keyboard, state, & fd_client, afd);
 					

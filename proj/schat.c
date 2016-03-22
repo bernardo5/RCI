@@ -92,24 +92,28 @@ void join(char**buffer_udp, char**argv, int *n_udp, int fd_udp, int *leav, struc
 	return;
 }
 
-void leave(char**buffer_udp, char**argv, int*leav, int *n_udp, int fd_udp, struct sockaddr_in addr_udp, socklen_t *addrlen_udp ){
-	sprintf(*buffer_udp, "%s %s\n","UNR", argv[2]);
+void leave(char**argv, int*leav, int fd_udp, struct sockaddr_in addr_udp, socklen_t *addrlen_udp ){
+	char*buffer_udp=malloc(128*sizeof(char));
+	int n_udp;
+	
+	sprintf(buffer_udp, "%s %s\n","UNR", argv[2]);
 	
 	(*leav)=1;
-	(*n_udp)=sendto(fd_udp, (*buffer_udp), strlen((*buffer_udp)), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
-	if((*n_udp)==-1) exit(1);//error
+	n_udp=sendto(fd_udp, buffer_udp, strlen((buffer_udp)), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
+	if(n_udp==-1) exit(1);//error
 						
 	/*receive echo part*/
 						
 	(*addrlen_udp)=sizeof(addr_udp);
 	printf("going to rcvfrom\n");
-	(*n_udp)=recvfrom(fd_udp, (*buffer_udp), 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
-	if((*n_udp)==-1) exit(1);//error
+	n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
+	if(n_udp==-1) exit(1);//error
 	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
-	(*buffer_udp)[(*n_udp)]='\0';
-	printf("%s\n", (*buffer_udp));
+	(buffer_udp)[n_udp]='\0';
+	printf("%s\n", (buffer_udp));
 		
+	free(buffer_udp);
 	return;
 }
 
@@ -381,7 +385,7 @@ int main(int argc, char**argv)
 						find(&buffer_udp, keyboard, &names, &command, &n_udp, fd_udp, addr_udp, &addrlen_udp);
 						
 					}else if(strcmp(command, "leave")==0){
-						leave(&buffer_udp, argv, &leav, &n_udp, fd_udp, addr_udp, &addrlen_udp );						
+						leave(argv, &leav, fd_udp, addr_udp, &addrlen_udp );						
 					}else if((strcmp(command, "connect")==0)){
 						connect_(&buffer, &n, &nw, argv,
 							&afd, &n_client, &fd_client,& addr_client,
@@ -398,7 +402,7 @@ int main(int argc, char**argv)
 						}
 					}else if(strcmp(command, "exit")==0){
 						if(!leav){
-							leave(&buffer_udp, argv, &leav, &n_udp, fd_udp, addr_udp, &addrlen_udp);
+							leave(argv, &leav, fd_udp, addr_udp, &addrlen_udp);
 						}			
 							if(state==busy) disconnect(&afd, &state);
 							close(fd_udp);

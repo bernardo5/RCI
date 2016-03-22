@@ -235,64 +235,68 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 		 printf("wrong arguments\n");
 		 return;
 	 }
-	
-	if((*state)==idle){
-		find(&buffer_udp, keyboard, fd_udp, addr_udp, &(*addrlen_udp));
-		if((strcmp(buffer_udp, "NOK - Surname not registered")!=0)&&(strcmp(buffer_udp, "NOK - User not registered\n")!=0)){
-		/* *****************************************************/
-			/*separate arguments*/
-			sscanf(buffer_udp, "%s %[^;];%s", command, names, buf);
-			printf("tcp_ip: %s\n", buf);
-			char *token;
-			tcp_ip = strtok(buf, ";");
-			token=strtok(NULL, ";");
-			tcp_port=atoi(token);
-								
-			printf("%s %s %s %d\n", command, names, tcp_ip, tcp_port);
+	if(strcmp(names, argv[2])!=0){	
+			if((*state)==idle){
+				find(&buffer_udp, keyboard, fd_udp, addr_udp, &(*addrlen_udp));
+				if((strcmp(buffer_udp, "NOK - Surname not registered")!=0)&&(strcmp(buffer_udp, "NOK - User not registered\n")!=0)){
+				/* *****************************************************/
+					
+				/*separate arguments*/
+				sscanf(buffer_udp, "%s %[^;];%s", command, names, buf);
+				printf("tcp_ip: %s\n", buf);
+				char *token;
+				tcp_ip = strtok(buf, ";");
+				token=strtok(NULL, ";");
+				tcp_port=atoi(token);
+											
+				printf("%s %s %s %d\n", command, names, tcp_ip, tcp_port);
 						
-			/* **************************************************** */
-			/*tcp connect*/
-			if((fd_client=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket client\n");exit(1);}//error
-			memset((void*)&(*addr_client),(int)'\0',sizeof(*addr_client));
-			(*addr_client).sin_family=AF_INET;
-			inet_aton(tcp_ip, &(*addr_client).sin_addr);
-			(*addr_client).sin_port=htons(tcp_port);
-			n_client=connect(fd_client,(struct sockaddr*)&(*addr_client), sizeof((*addr_client)));
-			if(n_client==-1){printf("erro no connect\n"); exit(1);}else{
-				printf("connected\n");(*afd)=fd_client;(*state)=busy;/*connected=true;*/
-				sprintf(buf, "%s %s\n", "NAME", argv[2]);
-				if((nw=write(fd_client,buf,strlen(buf)+1))<=0){
-					printf("error sending message\n");
-					exit(1);
-				}else{
-					printf("sent: %s\n", buf);
-					if((n=read(fd_client,buffer,128))!=0){
-						if(n==-1)exit(1);
-						if(n!=0){
-							printf("entrou\n");
-							printf("key: %s\n", key);
-							sprintf(buf, "%s%s",key, ".txt");
-							
-							unsigned char b;
-							sscanf(buffer, "%s %c", command, &b);
-							int a=(int)b;
-							printf("line:%d\n", a);
-							printf("connect %s\n", buf);
-							if(get_answer_file((*afd), a, buf)){
-								disconnect(&(*afd), &(*state));
-							}else{
-							/*reverse authentication*/
-							printf("segundo\n");
-							srand(time(NULL));
-							if(send_challenge(rand()%256, fd_client, n, buf)){disconnect(&(*afd), &(*state));}
-							}
-						}else disconnect(&(*afd), &(*state));
-					}
-				}					
+				/* **************************************************** */
+				/*tcp connect*/
+				if((fd_client=socket(AF_INET,SOCK_STREAM,0))==-1){printf("error in socket client\n");exit(1);}//error
+				memset((void*)&(*addr_client),(int)'\0',sizeof(*addr_client));
+				(*addr_client).sin_family=AF_INET;
+				inet_aton(tcp_ip, &(*addr_client).sin_addr);
+				(*addr_client).sin_port=htons(tcp_port);
+				n_client=connect(fd_client,(struct sockaddr*)&(*addr_client), sizeof((*addr_client)));
+				if(n_client==-1){printf("erro no connect\n"); exit(1);}else{
+					printf("connected\n");(*afd)=fd_client;(*state)=busy;/*connected=true;*/
+					sprintf(buf, "%s %s\n", "NAME", argv[2]);
+					if((nw=write(fd_client,buf,strlen(buf)+1))<=0){
+						printf("error sending message\n");
+						exit(1);
+					}else{
+						printf("sent: %s\n", buf);
+						if((n=read(fd_client,buffer,128))!=0){
+							if(n==-1)exit(1);
+							if(n!=0){
+								printf("entrou\n");
+								printf("key: %s\n", key);
+								sprintf(buf, "%s%s",key, ".txt");
+								
+								unsigned char b;
+								sscanf(buffer, "%s %c", command, &b);
+								int a=(int)b;
+								printf("line:%d\n", a);
+								printf("connect %s\n", buf);
+								if(get_answer_file((*afd), a, buf)){
+									disconnect(&(*afd), &(*state));
+								}else{
+								/*reverse authentication*/
+								printf("segundo\n");
+								srand(time(NULL));
+								if(send_challenge(rand()%256, fd_client, n, buf)){disconnect(&(*afd), &(*state));}
+								}
+							}else disconnect(&(*afd), &(*state));
+						}
+					}					
+				}
+			}else{
+				printf("NOK - Connection refused...\n");
 			}
-		}else{
-			printf("NOK-Connection refused...\n");
 		}
+	}else{
+		printf("NOK - You can't connect with yourself \n");
 	}	
 	free(names);
 	free(key);

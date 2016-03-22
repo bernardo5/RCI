@@ -207,25 +207,28 @@ void disconnect(int*afd, STATE*s){
 	return;
 }
 
-void message(char**allen, char*keyboard, char**command, STATE state, int* fd_client, int afd, int *nw){
+void message(char*keyboard, STATE state, int* fd_client, int afd){
+	int nw;
+	char *buf=malloc(30*sizeof(char));
+	char *command=malloc(15*sizeof(char));
 	
 	printf("send message\n");
-	bzero((*allen), strlen((*allen)));
-	if(sscanf(keyboard, "%s %[^\n]s", (*command), (*allen))!=2){
+	if(sscanf(keyboard, "%s %[^\n]s", command, buf)!=2){
 		printf("not enough arguments\n");
 	}else{
 		if(state==busy){
 			printf("input: %s\n", keyboard);
-			printf("message to send: %s\n", (*allen));
+			printf("message to send: %s\n", buf);
 			(*fd_client)=afd;
-			if(((*nw)=write((*fd_client),(*allen),strlen((*allen))+1))<=0){
+			if((nw=write((*fd_client),buf,strlen(buf)+1))<=0){
 				printf("error sending message\n");
 				exit(1);
-			}else printf("sent: %s\n", (*allen));
+			}else printf("sent: %s\n", buf);
 		}
 							
 	}
-	
+	free(buf);
+	free(command);
 	return;
 }
 
@@ -386,7 +389,7 @@ int main(int argc, char**argv)
 							  &buffer_udp, &names, &command, &allen, &key,
 							   &n_udp, fd_udp, addr_udp, &addrlen_udp);
 					}else if((strcmp(command, "message")==0)){
-						message(&allen, keyboard, &command, state, & fd_client, afd, &nw);
+						message(keyboard, state, & fd_client, afd);
 					
 					}else if((strcmp(command, "disconnect")==0)){
 						if(state==busy){

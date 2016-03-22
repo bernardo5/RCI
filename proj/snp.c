@@ -433,14 +433,18 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 				if(validate_surname(surname_program, *surname, &(*buf))!=0){
 					printf("QRY de apelido diferente: %s\n", *surname);
 					/*enviar squery a perguntar qual o servidor cm quem tem de falar*/
-					printf("%s\n", ask_server(*surname));
-					strcpy(*buf, get_user_location(ask_server(*surname), *name));
-					printf("%s", *buf);
+					if(strcmp(ask_server(*surname), "SRPL")!=0){
+						printf("%s\n", ask_server(*surname));
+						strcpy(*buf, get_user_location(ask_server(*surname), *name));
+						printf("%s", *buf);
+					}else{
+						strcpy(*buf, "NOK - Surname not registered");
+					}
 				}else{/*information in this server*/
 					/*send RPL*/
 					printf("enviar RPL\n");
 					if(!find_user((*root), (*name), &(*buf), *surname, 1)){
-						strcpy(*buf, "User not registered\n");
+						strcpy(*buf, "NOK - User not registered\n");
 					}
 				}
 			}

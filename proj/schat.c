@@ -237,7 +237,7 @@ void connect_(char**buffer, int *n, int*nw, char**argv, int *afd, int *n_client,
 	
 	if((*state)==idle){
 		find(&(*buffer_udp), keyboard, &(*names), &(*command), &(*n_udp), fd_udp, addr_udp, &(*addrlen_udp));
-		
+		if((strcmp((*buffer_udp), "NOK - Surname not registered")!=0)&&(strcmp((*buffer_udp), "NOK - User not registered\n")!=0)){
 		/* *****************************************************/
 			/*separate arguments*/
 			sscanf((*buffer_udp), "%s %[^;];%s", (*command), (*names), (*allen));
@@ -282,6 +282,9 @@ void connect_(char**buffer, int *n, int*nw, char**argv, int *afd, int *n_client,
 					}
 				}					
 			}
+		}else{
+			printf("NOK-Connection refused...\n");
+		}
 	}		
 	return;
 }

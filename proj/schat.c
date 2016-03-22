@@ -156,10 +156,11 @@ int send_challenge(int challenge_number, int newfd, int n, char*name){
 	int nw;
 	int binary;
 	char buffer[10];
+	unsigned char number=challenge_number;
 	printf("challenge number: %d\n", challenge_number);
-	binary=convert_to_binary(challenge_number);
-	printf("binary: %d\n", binary);
-	sprintf(buffer, "%08d\n", binary);
+	//binary=convert_to_binary(challenge_number);
+	//printf("binary: %d\n", binary);
+	sprintf(buffer, "%c\n", number);
 	printf("buffer:%s\n", buffer);
 	if((nw=write(newfd,buffer,n))<=0){
 		return 1;
@@ -294,13 +295,19 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 						if(n==-1)exit(1);
 						if(n!=0){
 							printf("entrou\n");
-							printf("line:%d\n", atoi(buffer));
+							
 							strcpy(buf, strcat(key, ".txt"));
-							if(get_answer_file(fd_client, binary_to_int(atoi(buffer)), buf)){
+							
+							unsigned char b;
+							sscanf(buffer, "%c", &b);
+							int a=(int)b;
+							printf("line:%d\n", a);
+							if(get_answer_file((*afd), a, buf)){
 								disconnect(&(*afd), &(*state));
 							}else{
 							/*reverse authentication*/
 							printf("segundo\n");
+							srand(time(NULL));
 							if(send_challenge(rand()%256, fd_client, n, buf)){disconnect(&(*afd), &(*state));}
 							}
 						}else disconnect(&(*afd), &(*state));
@@ -457,8 +464,10 @@ int main(int argc, char**argv)
 							if((n=read(afd,buffer,128))!=0){
 								if(n==-1)exit(1);
 								if(n==0){close(afd); state=idle;}else{
-									printf("line:%d\n", atoi(buffer));
-									if(get_answer_file(afd, binary_to_int(atoi(buffer)), strcat(argv[2], ".txt"))){
+									unsigned char b;
+									sscanf(buffer, "%c", &b);
+									printf("line:%d\n", (int)b);
+									if(get_answer_file(afd, (int)b, strcat(argv[2], ".txt"))){
 										disconnect(&afd, &state);
 									}
 								}

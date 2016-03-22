@@ -432,7 +432,8 @@ int main(int argc, char**argv)
 						printf("entrou no nome\n");
 						printf("Attempt to connect by %s\n", names);
 						srand(time(NULL));
-						if(send_challenge(rand()%256, afd, n, strcat(names, ".txt"))){
+						sprintf(buffer,"%s%s", names, ".txt");
+						if(send_challenge(rand()%256, afd, n, buffer)){
 							disconnect(&afd, &state);
 						}else{
 							bzero(command, strlen(command));

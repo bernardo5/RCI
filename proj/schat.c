@@ -13,30 +13,6 @@
 
 typedef enum{idle, busy} STATE;
 
-int binary_to_int(int num){
-	int binary_num, decimal_num = 0, base = 1, rem;
-    binary_num = num;
-    while (num > 0)
-    {
-        rem = num % 10;
-        decimal_num = decimal_num + rem * base;
-        num = num / 10 ;
-        base = base * 2;
-    }
-    return decimal_num;
-}
-
-int convert_to_binary(int n){
-	int rem, i = 1, binary = 0;
-    while(n != 0){
-		rem = n%2;
-        n /= 2;
-        binary += rem*i;
-        i *= 10;
-    }
-    return binary;
-}
-
 int check_dot(char*names){
 	char*pointer_to_dot=strchr(names, '.');
 	if(pointer_to_dot==names){
@@ -170,6 +146,7 @@ int send_challenge(int challenge_number, int newfd, int n, char*name){
 	fp = fopen(name,"r");
 		if(fp == NULL){
 			printf("Erro na abertura do ficheiro para escrita\n");
+			printf("No send challenge\n");
 			return 1;
 		}
 		n=1;
@@ -195,9 +172,12 @@ int get_answer_file(int afd, int line, char*name){
 	char buffer[128];
 	FILE *fp;
 	
+	strcat(name, ".txt");
+	
 	fp = fopen(name,"r");
 		if(fp == NULL){
 			printf("Erro na abertura do ficheiro para escrita\n");
+			printf("Doesn't exist file %s\n", name);
 			return 1;
 		}
 	while((fgets(buffer,sizeof(buffer),fp)!=NULL) && n!=line) n++;	
@@ -292,13 +272,14 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 						if(n==-1)exit(1);
 						if(n!=0){
 							printf("entrou\n");
-							
+							printf("key: %s\n", key);
 							strcpy(buf, strcat(key, ".txt"));
 							
 							unsigned char b;
 							sscanf(buffer, "%s %c", command, &b);
 							int a=(int)b;
 							printf("line:%d\n", a);
+							printf("connect %s\n", buf);
 							if(get_answer_file((*afd), a, buf)){
 								disconnect(&(*afd), &(*state));
 							}else{
@@ -464,7 +445,7 @@ int main(int argc, char**argv)
 									unsigned char b;
 									sscanf(buffer, "%s %c", command ,&b);
 									printf("line:%d\n", (int)b);
-									if(get_answer_file(afd, (int)b, strcat(argv[2], ".txt"))){
+									if(get_answer_file(afd, (int)b, argv[2])){
 										disconnect(&afd, &state);
 									}
 								}

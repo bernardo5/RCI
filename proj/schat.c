@@ -320,13 +320,11 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 	return;
 }
 
-void free_strings(char**buffer, char**keyboard, char**command, char**names, char**key, char**allen){
+void free_strings(char**buffer, char**keyboard, char**command, char**names){
 	free(*buffer);
 	free(*keyboard);
 	free(*command);
 	free(*names);
-	free(*key);
-	free(*allen);	
 	return;
 }
 
@@ -365,9 +363,6 @@ int main(int argc, char**argv)
 	char *keyboard=malloc(45*sizeof(char));
 	char *command=malloc(15*sizeof(char));
 	char*names=malloc(15*sizeof(char));
-	char*key=malloc(15*sizeof(char));
-	
-	char *allen=malloc(30*sizeof(char));
 	
 	void (*old_handler)(int);//interupt handler
 	if((old_handler=signal(SIGPIPE, SIG_IGN))==SIG_ERR)exit(1);
@@ -425,7 +420,7 @@ int main(int argc, char**argv)
 						}			
 							if(state==busy) disconnect(&afd, &state);
 							close(fd_udp);
-							free_strings(&buffer, &keyboard, &command, &names, &key, &allen);
+							free_strings(&buffer, &keyboard, &command, &names);
 							exit(0);
 							//}else printf("please leave before exit\n");
 					}

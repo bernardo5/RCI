@@ -154,13 +154,10 @@ void find(char**buffer_udp, char*keyboard, int fd_udp, struct sockaddr_in addr_u
 
 int send_challenge(int challenge_number, int newfd, int n, char*name){
 	int nw;
-	int binary;
 	char buffer[10];
 	unsigned char number=challenge_number;
 	printf("challenge number: %d\n", challenge_number);
-	//binary=convert_to_binary(challenge_number);
-	//printf("binary: %d\n", binary);
-	sprintf(buffer, "%c\n", number);
+	sprintf(buffer, "%s %c\n", "AUTH", number);
 	printf("buffer:%s\n", buffer);
 	if((nw=write(newfd,buffer,n))<=0){
 		return 1;
@@ -299,7 +296,7 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 							strcpy(buf, strcat(key, ".txt"));
 							
 							unsigned char b;
-							sscanf(buffer, "%c", &b);
+							sscanf(buffer, "%s %c", command, &b);
 							int a=(int)b;
 							printf("line:%d\n", a);
 							if(get_answer_file((*afd), a, buf)){
@@ -465,7 +462,7 @@ int main(int argc, char**argv)
 								if(n==-1)exit(1);
 								if(n==0){close(afd); state=idle;}else{
 									unsigned char b;
-									sscanf(buffer, "%c", &b);
+									sscanf(buffer, "%s %c", command ,&b);
 									printf("line:%d\n", (int)b);
 									if(get_answer_file(afd, (int)b, strcat(argv[2], ".txt"))){
 										disconnect(&afd, &state);

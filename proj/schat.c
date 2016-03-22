@@ -146,7 +146,7 @@ int send_challenge(int challenge_number, int newfd, int n, char*name){
 	fp = fopen(name,"r");
 		if(fp == NULL){
 			printf("Erro na abertura do ficheiro para escrita\n");
-			printf("No send challenge\n");
+			printf("Cannot open file %s\n", name);
 			return 1;
 		}
 		n=1;
@@ -171,8 +171,6 @@ int get_answer_file(int afd, int line, char*name){
 	int n=1;
 	char buffer[128];
 	FILE *fp;
-	
-	strcat(name, ".txt");
 	
 	fp = fopen(name,"r");
 		if(fp == NULL){
@@ -273,7 +271,7 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 						if(n!=0){
 							printf("entrou\n");
 							printf("key: %s\n", key);
-							strcpy(buf, strcat(key, ".txt"));
+							sprintf(buf, "%s%s",key, ".txt");
 							
 							unsigned char b;
 							sscanf(buffer, "%s %c", command, &b);
@@ -445,7 +443,8 @@ int main(int argc, char**argv)
 									unsigned char b;
 									sscanf(buffer, "%s %c", command ,&b);
 									printf("line:%d\n", (int)b);
-									if(get_answer_file(afd, (int)b, argv[2])){
+									sprintf(buffer, "%s%s", argv[2], ".txt");
+									if(get_answer_file(afd, (int)b, buffer)){
 										disconnect(&afd, &state);
 									}
 								}

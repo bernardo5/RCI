@@ -289,6 +289,16 @@ void connect_(char**buffer, int *n, int*nw, char**argv, int *afd, int *n_client,
 	return;
 }
 
+void free_strings(char**buffer, char**keyboard, char**command, char**names, char**key, char**allen){
+	free(*buffer);
+	free(*keyboard);
+	free(*command);
+	free(*names);
+	free(*key);
+	free(*allen);	
+	return;
+}
+
 int main(int argc, char**argv)
 {
 	check_args(argc, argv);
@@ -389,12 +399,7 @@ int main(int argc, char**argv)
 						}			
 							if(state==busy) disconnect(&afd, &state);
 							close(fd_udp);
-							free(buffer);
-							free(keyboard);
-							free(command);
-							free(names);
-							free(key);
-							free(allen);	
+							free_strings(&buffer, &keyboard, &command, &names, &key, &allen);
 							exit(0);
 							//}else printf("please leave before exit\n");
 					}

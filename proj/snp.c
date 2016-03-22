@@ -234,14 +234,7 @@ void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, in
     ip2=strtok(NULL, delimiter);
     ip3=strtok(NULL, delimiter);
     ip4=strtok(NULL, delimiter);
-    /*strcpy(*ip, ip1);
-    strcat(*ip, ".");
-    strcat(*ip, ip2);
-    strcat(*ip, ".");
-    strcat(*ip, ip3);
-    strcat(*ip, ".");
-    strcat(*ip, ip4);*/
-    
+        
     sprintf(*ip, "%s%s%s%s%s%s%s", ip1, ".", ip2, ".", ip3, ".", ip4);
     port=strtok(NULL, delimiter);
     sscanf(port, "%d", scport);

@@ -123,7 +123,7 @@ int send_challenge(int challenge_number, int newfd, int n, char*name){
 	char buffer[10];
 	unsigned char number=challenge_number;
 	sprintf(buffer, "%s %c\n", "AUTH", number);
-	printf("Sending authentication: %s\n", buffer);
+	printf("Sending authentication: %s\n", buffer); 
 	if((nw=write(newfd,buffer,n))<=0){
 		return 1;
 	}

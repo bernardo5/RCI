@@ -178,7 +178,6 @@ void AddUser(user**root, char*name, char*ip, int scport, char**buf){
 
 void list(user*root, char*surname){
 	if(root!=NULL){
-		/*printf("yupi!!!\n");*/
 		list(root->left, surname);
 		printf("%s\t\t%s\t\t%s\t\t%d\n", root->name, surname, root->ip, root->scport);
 		list(root->right, surname);

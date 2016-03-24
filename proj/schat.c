@@ -16,13 +16,10 @@ typedef enum{idle, busy} STATE;
 int check_dot(char*names){
 	char*pointer_to_dot=strchr(names, '.');
 	if(pointer_to_dot==names){
-		printf("ponto no inicio\n");
 		return 0;
 	}else if(pointer_to_dot==NULL){
-		printf("nao ha ponto\n");
 			return 0;
 		}else if(names[strlen(names)-1]=='.'){
-			printf("ponto no final\n");
 			return 0;
 		}else return 1;
 }
@@ -59,11 +56,9 @@ void join(char**argv,int fd_udp, int *leav, struct sockaddr_in addr_udp, socklen
 	if(n_udp==-1) exit(1);//error
 	/*receive echo part*/
 	(*addrlen_udp)=sizeof(addr_udp);				
-	printf("going to rcvfrom\n");
 				
 	n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
 	if(n_udp==-1) exit(1);//error
-	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
 	buffer_udp[n_udp]='\0';
 	printf("%s\n", buffer_udp);
@@ -84,10 +79,8 @@ void leave(char**argv, int*leav, int fd_udp, struct sockaddr_in addr_udp, sockle
 	
 	/*receive echo part*/				
 	(*addrlen_udp)=sizeof(addr_udp);
-	printf("going to rcvfrom\n");
 	n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
 	if(n_udp==-1) exit(1);//error
-	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
 	(buffer_udp)[n_udp]='\0';
 	printf("%s\n", (buffer_udp));
@@ -105,7 +98,6 @@ void find(char**buffer_udp, char*keyboard, int fd_udp, struct sockaddr_in addr_u
 		printf("not enough arguments\n");
 	}else{
 		if(check_dot(names)){
-			printf("name and surname: %s\n", names);
 			sprintf((*buffer_udp), "%s %s\n","QRY", names);
 							
 			n_udp=sendto(fd_udp, (*buffer_udp), strlen((*buffer_udp)), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
@@ -114,10 +106,8 @@ void find(char**buffer_udp, char*keyboard, int fd_udp, struct sockaddr_in addr_u
 			/*receive echo part*/
 							
 			(*addrlen_udp)=sizeof(addr_udp);
-			printf("going to rcvfrom\n");
 			n_udp=recvfrom(fd_udp, (*buffer_udp), 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
 			if(n_udp==-1) exit(1);//error
-			printf("answer to echo\n");
 			write(1, "echo: ",6);//stdout
 			(*buffer_udp)[n_udp]='\0';
 			printf("%s\n", (*buffer_udp));
@@ -132,26 +122,23 @@ int send_challenge(int challenge_number, int newfd, int n, char*name){
 	int nw;
 	char buffer[10];
 	unsigned char number=challenge_number;
-	printf("challenge number: %d\n", challenge_number);
 	sprintf(buffer, "%s %c\n", "AUTH", number);
-	printf("buffer:%s\n", buffer);
+	printf("Sending authentication: %s\n", buffer);
 	if((nw=write(newfd,buffer,n))<=0){
 		return 1;
 	}
-	printf("buffer:%s\n", buffer);
 	/*get answer to compare*/
 	char answer[10];
 	FILE *fp;
 	
 	fp = fopen(name,"r");
 		if(fp == NULL){
-			printf("Erro na abertura do ficheiro para escrita\n");
+			printf("Error opening file\n");
 			printf("Cannot open file %s\n", name);
 			return 1;
 		}
 		n=1;
 	while((fgets(answer,sizeof(answer),fp)!=NULL) && n!=challenge_number) n++;	
-	printf("answer: %s in line %d\n", answer, n);
 	fclose(fp);	
 	
 	if((n=read(newfd,buffer,128))!=0)
@@ -174,12 +161,11 @@ int get_answer_file(int afd, int line, char*name){
 	
 	fp = fopen(name,"r");
 		if(fp == NULL){
-			printf("Erro na abertura do ficheiro para escrita\n");
+			printf("Error opening file\n");
 			printf("Doesn't exist file %s\n", name);
 			return 1;
 		}
 	while((fgets(buffer,sizeof(buffer),fp)!=NULL) && n!=line) n++;	
-	printf("answer: %s in line %d\n", buffer, n);
 	fclose(fp);	
 	
 	if((n=write(afd,buffer,strlen(buffer)+1))<=0){
@@ -201,13 +187,12 @@ void message(char*keyboard, STATE state, int* fd_client, int afd){
 	char *buf=malloc(30*sizeof(char));
 	char *command=malloc(15*sizeof(char));
 	
-	printf("send message\n");
 	if(sscanf(keyboard, "%s %[^\n]s", command, buf)!=2){
 		printf("not enough arguments\n");
 	}else{
 		if(state==busy){
-			printf("input: %s\n", keyboard);
-			printf("message to send: %s\n", buf);
+			/*printf("input: %s\n", keyboard);
+			printf("message to send: %s\n", buf);*/
 			(*fd_client)=afd;
 			if((nw=write((*fd_client),buf,strlen(buf)+1))<=0){
 				printf("error sending message\n");
@@ -243,13 +228,11 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 					
 				/*separate arguments*/
 				sscanf(buffer_udp, "%s %[^;];%s", command, names, buf);
-				printf("tcp_ip: %s\n", buf);
 				char *token;
 				tcp_ip = strtok(buf, ";");
 				token=strtok(NULL, ";");
 				tcp_port=atoi(token);
 											
-				printf("%s %s %s %d\n", command, names, tcp_ip, tcp_port);
 						
 				/* **************************************************** */
 				/*tcp connect*/
@@ -270,20 +253,15 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 						if((n=read(fd_client,buffer,128))!=0){
 							if(n==-1)exit(1);
 							if(n!=0){
-								printf("entrou\n");
-								printf("key: %s\n", key);
 								sprintf(buf, "%s%s",key, ".txt");
 								
 								unsigned char b;
 								sscanf(buffer, "%s %c", command, &b);
 								int a=(int)b;
-								printf("line:%d\n", a);
-								printf("connect %s\n", buf);
 								if(get_answer_file((*afd), a, buf)){
 									disconnect(&(*afd), &(*state));
 								}else{
 								/*reverse authentication*/
-								printf("segundo\n");
 								srand(time(NULL));
 								if(send_challenge(rand()%256, fd_client, n, buf)){disconnect(&(*afd), &(*state));}
 								}
@@ -433,7 +411,6 @@ int main(int argc, char**argv)
 					printf("message received: %s\n", buffer);//error
 					sscanf(buffer, "%s %s", command, names);
 					if(strcmp(command, "NAME")==0){
-						printf("entrou no nome\n");
 						printf("Attempt to connect by %s\n", names);
 						srand(time(NULL));
 						sprintf(buffer,"%s%s", names, ".txt");
@@ -441,13 +418,11 @@ int main(int argc, char**argv)
 							disconnect(&afd, &state);
 						}else{
 							bzero(command, strlen(command));
-							printf("segundo\n");
 							if((n=read(afd,buffer,128))!=0){
 								if(n==-1)exit(1);
 								if(n==0){close(afd); state=idle;}else{
 									unsigned char b;
 									sscanf(buffer, "%s %c", command ,&b);
-									printf("line:%d\n", (int)b);
 									sprintf(buffer, "%s%s", argv[2], ".txt");
 									if(get_answer_file(afd, (int)b, buffer)){
 										disconnect(&afd, &state);

@@ -244,7 +244,6 @@ void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, in
 void separate_delimiters_UNR(char *str, char **name, char**surname){
 	char *delimiter = " .";
 	char *token;
-	//char*surname_aux;
 	// get the first token 
 	token = strtok(str, delimiter);
    
@@ -300,7 +299,6 @@ char* ask_server(char*surname){
 	n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
 	if(n==-1) return "error\n";//error
 	if(n<128) answer[n]='\0';
-	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
 	write(1, answer, n);
 	printf("\n");
@@ -334,9 +332,6 @@ char * get_user_location(char*server, char*name){
 	
 	separate_delimiters_SRPL(server, &surname, &snpip, &snpport);
 	
-	printf(" jdkhcjdncjadcjdlvncdjvnidvndjv %s %s %d\n", surname, snpip, snpport);
-	printf("%s\n", name);
-	
 	char* answer=malloc(128*sizeof(char));
 	char query[45];
 	fd_set rfds;
@@ -355,7 +350,6 @@ char * get_user_location(char*server, char*name){
 	addr.sin_port=htons(snpport);
 	
 	sprintf(query, "%s %s%s%s", "QRY", name, ".", surname);
-	printf("query: %s\n", query);
 	
 	addrlen=sizeof(addr);
 	n=sendto(fd, query, 45, 0, (struct sockaddr*)&addr, sizeof(addr));
@@ -363,7 +357,6 @@ char * get_user_location(char*server, char*name){
 	
 	/*receive echo part*/
 	addrlen=sizeof(addr);
-	printf("dsj\n");
 	
 	
 	/***************************************************************/
@@ -381,8 +374,6 @@ char * get_user_location(char*server, char*name){
 			n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
 			if(n==-1) return "error\n";//error
 			if(n<128) answer[n]='\0';
-			printf("bring it\n");
-			printf("answer to echo\n");
 			write(1, "echo: ",6);//stdout
 			write(1, answer, n);
 			printf("\n");
@@ -401,7 +392,6 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 	if(sscanf(*buf, "%s", command)!=1){
 		printf("error in arguments\n");
 	}else{
-		printf("command= %s\n", command);
 		if((strcmp(command, "REG")==0)||(strcmp(command, "UNR")==0)||(strcmp(command, "QRY")==0)){
 			if(strcmp(command, "REG")==0){ /* registo de um user */
 				separate_delimiters_REG(*buf, &(*name), &(*surname), &(*ip), &(*scport));
@@ -412,18 +402,14 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 				}
 			}else if(strcmp(command, "UNR")==0){ /* apagar a sessao de um user */
 						separate_delimiters_UNR(*buf, &(*name), &(*surname));
-						printf("%s %s\n", *name, *surname);
 						if(validate_surname(surname_program, *surname, &(*buf))!=0)	return;
 						if(find_user((*root), *name, &(*buf), *surname, 0)){
-							printf("encontrou e nao devia\n");
 							 DeleteUser(&(*root), *name, &(*buf));
 						 }else  strcpy(*buf, "NOK - Invalid name in this server\0");
 			}else if(strcmp(command, "QRY")==0){
 				strcpy(query, *buf);
 				separate_delimiters_UNR(query, &(*name), &(*surname));
-				printf("%s %s\n", *name, *surname);
 				if(validate_surname(surname_program, *surname, &(*buf))!=0){
-					printf("QRY de apelido diferente: %s\n", *surname);
 					/*enviar squery a perguntar qual o servidor cm quem tem de falar*/
 					if(strcmp(ask_server(*surname), "SRPL")!=0){
 						printf("%s\n", ask_server(*surname));
@@ -434,7 +420,6 @@ void validate_user_command(char**buf, char **name, char**surname, char**ip, int*
 					}
 				}else{/*information in this server*/
 					/*send RPL*/
-					printf("enviar RPL\n");
 					if(!find_user((*root), (*name), &(*buf), *surname, 1)){
 						strcpy(*buf, "NOK - User not registered\n");
 					}
@@ -476,7 +461,6 @@ void registe(char**buff, char**argv, int fd, struct sockaddr_in addr, char*place
 	n=recvfrom(fd, *buff, 128,0, (struct sockaddr*)&addr, &addrlen);
 	if(n==-1) exit(1);//error
 	if(n<128) (*buff)[n]='\0';
-	printf("answer to echo\n");
 	write(1, "echo: ",6);//stdout
 	write(1, *buff, n);
 	printf("\n");

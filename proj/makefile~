@@ -1,5 +1,5 @@
 snp:
-	gcc snp.c tree.c -o snp -g
+	gcc snp.c -o snp -g
 
 schat:
 	gcc schat.c -o schat -g

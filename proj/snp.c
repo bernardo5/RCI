@@ -3,7 +3,7 @@
 int main(int argc, char**argv){
 	int server_specified=0;
 	
-	check_args(argc, argv, &server_specified);
+	check_args(argc, argv, &server_specified); /*checks if arguments in command line are correct*/
 	
 	
 	int port, fd, ret;
@@ -24,7 +24,7 @@ int main(int argc, char**argv){
 	int scport;
 	user*root=NULL; /*pointer to binary tree to store users*/
 	
-	if(server_specified==1){
+	if(server_specified==1){/*use ip and port specified by user*/
 		a=(struct in_addr*)argv[8];
 		port=atoi(argv[10]);
 	}else{
@@ -34,7 +34,7 @@ int main(int argc, char**argv){
 		port=58000;
 	}
 	
-	/*register in tejo*/
+	/*register in server*/
 	
 	fd=socket(AF_INET, SOCK_DGRAM, 0); /*UDP socket*/
 	if(fd==-1) exit(-1);/*error*/
@@ -44,7 +44,7 @@ int main(int argc, char**argv){
 	addr.sin_addr=*a;
 	addr.sin_port=htons(port);
 	
-	registe(&buffer, argv, fd, addr, "register");
+	registe(&buffer, argv, fd, addr, "register"); /*register surname in server*/
 	close(fd);
 	/* ******************************************** */
 	
@@ -86,13 +86,13 @@ int main(int argc, char**argv){
 					addr.sin_addr=*a;
 					addr.sin_port=htons(port);
 						
-					registe(&buffer, argv, fd, addr, "exit");
+					registe(&buffer, argv, fd, addr, "exit"); /*tells the server that the surname wont be available any more*/
 					close(fd);
 					exit(0);
 				}else{
 					if(strcmp(buf, "list\n")==0){
 						printf("name\t\tsurname\t\tip\t\tscport\n");
-						list(root, argv[2]);
+						list(root, argv[2]);/*displays names database*/
 					}
 				}
 			}
@@ -101,14 +101,14 @@ int main(int argc, char**argv){
 
 		if(FD_ISSET(fd,&rfds)){
 			addrlen=sizeof(addr);
-			nread=recvfrom(fd, buff,128,0,(struct sockaddr*)&addr, &addrlen);
+			nread=recvfrom(fd, buff,128,0,(struct sockaddr*)&addr, &addrlen); /*receives requests*/
 			if(nread==-1)exit(1);//error
 			if(nread<128) buff[nread]='\0';
 			write(1, "received: ",10);//stdout
 			write(1, buff, strlen(buff));
 			printf("\n");
-			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2], &root);
-			ret=sendto(fd, buff, 128,0,(struct sockaddr*)&addr, addrlen);
+			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2], &root); /*checks for valid requests and generates answer*/
+			ret=sendto(fd, buff, 128,0,(struct sockaddr*)&addr, addrlen);/*sends generated answer*/
 			if(ret==-1)exit(1);
 		}
 		

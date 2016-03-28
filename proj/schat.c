@@ -2,7 +2,7 @@
 
 int main(int argc, char**argv)
 {
-	check_args(argc, argv);
+	check_args(argc, argv); /*checks if the correct sintax was used in the command line*/
 	/*udp socket*/
 	int fd_udp, leav=1; 
 	socklen_t addrlen_udp;
@@ -64,7 +64,7 @@ int main(int argc, char**argv)
 		counter=select(maxfd+1,&rfds,(fd_set*)NULL,(fd_set*)NULL,(struct timeval *)NULL);
 		if(counter<=0)exit(1);//errror
 		
-		if(FD_ISSET(fileno(stdin), &rfds)){
+		if(FD_ISSET(fileno(stdin), &rfds)){ /*checks for keyboard input*/
 			fgets(keyboard, 45, stdin);
 			if(sscanf(keyboard, "%s", command)==1){
 				if(strcmp(command, "join")==0){
@@ -100,7 +100,7 @@ int main(int argc, char**argv)
 			/****************************************/
 		}
 		
-		if(FD_ISSET(fd,&rfds)){
+		if(FD_ISSET(fd,&rfds)){ /*checks if someone is trying to connect*/
 			addrlen=sizeof(addr);
 			if((newfd=accept(fd,(struct sockaddr*)&addr,&addrlen))==-1)exit(1);//error
 			switch(state)
@@ -111,7 +111,7 @@ int main(int argc, char**argv)
 			}
 		}
 		if(state==busy){	
-			if(FD_ISSET(afd,&rfds))
+			if(FD_ISSET(afd,&rfds)) /*checks if has a new message from a connected peers*/
 			{
 				if((n=read(afd,buffer,128))!=0)
 				{if(n==-1)exit(1);//error

@@ -1,6 +1,6 @@
 #include "snp_func.h"
 
-void list(user*root, char*surname){
+void list(user*root, char*surname){ /*in-order tree algorithm*/
 	if(root!=NULL){
 		list(root->left, surname);
 		printf("%s\t\t%s\t\t%s\t\t%d\n", root->name, surname, root->ip, root->scport);
@@ -71,7 +71,7 @@ int validate_surname(char*surname_program, char*surname, char**buf){
 	return strcmp(surname_program, surname);
 }
 
-char* ask_server(char*surname){
+char* ask_server(char*surname){ /*asks tejo the location of another name server (surname)*/
 	char* answer=malloc(128*sizeof(char));
 	char query[45];
 	fd_set rfds;
@@ -128,7 +128,7 @@ char* ask_server(char*surname){
 
 
 
-char * get_user_location(char*server, char*name){
+char * get_user_location(char*server, char*name){ /*asks a name server the location of a name (user)*/
 	char *surname=malloc(15*sizeof(char));
 	char *snpip=malloc(15*sizeof(char));
 	int snpport;

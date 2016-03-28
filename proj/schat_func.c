@@ -1,6 +1,6 @@
 #include "schat_func.h"
 
-int check_dot(char*names){
+int check_dot(char*names){ /*checks correct sintax for <name.surname>*/
 	char*pointer_to_dot=strchr(names, '.');
 	if(pointer_to_dot==names){
 		return 0;
@@ -47,7 +47,7 @@ void join(char**argv,int fd_udp, int *leav, struct sockaddr_in addr_udp, socklen
 	
 	fd_set rfds;
 			
-	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
+	struct timeval tv = {10, 0}; /*waits 10s for an answer*/
 	FD_ZERO(&rfds);
 	FD_SET(fd_udp,&rfds);
 	int counter=select(fd_udp + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
@@ -91,7 +91,7 @@ void leave(char**argv, int*leav, int fd_udp, struct sockaddr_in addr_udp, sockle
 	
 	fd_set rfds;
 			
-	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
+	struct timeval tv = {10, 0}; /*waits 10s for an answer*/
 	FD_ZERO(&rfds);
 	FD_SET(fd_udp,&rfds);
 	int counter=select(fd_udp + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
@@ -139,7 +139,7 @@ void find(char**buffer_udp, char*keyboard, int fd_udp, struct sockaddr_in addr_u
 			
 			fd_set rfds;
 			
-			struct timeval tv = {30, 0}; /*waits 1m for an answer*/
+			struct timeval tv = {30, 0}; /*waits 30s for an answer*/
 			FD_ZERO(&rfds);
 			FD_SET(fd_udp,&rfds);
 			int counter=select(fd_udp + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
@@ -178,7 +178,7 @@ void separate_delimiters_SRPL(char *str, char**names, char**tcp_ip, int* tcp_por
 int send_challenge(int challenge_number, int newfd, int n, char*name){
 	int nw;
 	char buffer[10];
-	unsigned char number=challenge_number;
+	unsigned char number=challenge_number; /*converts to ASCII*/
 	sprintf(buffer, "%s %c\n", "AUTH", number);
 	printf("Sending authentication: %s\n", buffer); 
 	if((nw=write(newfd,buffer,n))<=0){
@@ -279,7 +279,7 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 	 }
 	if(strcmp(names, argv[2])!=0){	
 			if((*state)==idle){
-				find(&buffer_udp, keyboard, fd_udp, addr_udp, &(*addrlen_udp));
+				find(&buffer_udp, keyboard, fd_udp, addr_udp, &(*addrlen_udp));/*gets user location*/
 				if((strcmp(buffer_udp, "NOK - Surname not registered")!=0)&&(strcmp(buffer_udp, "NOK - User not registered\n")!=0)){
 				/* *****************************************************/
 					
@@ -294,22 +294,22 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 				inet_aton(tcp_ip, &(*addr_client).sin_addr);
 				(*addr_client).sin_port=htons(tcp_port);
 				n_client=connect(fd_client,(struct sockaddr*)&(*addr_client), sizeof((*addr_client)));
-				if(n_client==-1){printf("erro no connect\n"); exit(1);}else{
+				if(n_client==-1){printf("error in connect\n"); exit(1);}else{
 					printf("connected\n");(*afd)=fd_client;(*state)=busy;/*connected=true;*/
 					sprintf(buf, "%s %s\n", "NAME", argv[2]);
-					if((nw=write(fd_client,buf,strlen(buf)+1))<=0){
+					if((nw=write(fd_client,buf,strlen(buf)+1))<=0){ /*sends <name.surname> to other guy*/
 						printf("error sending message\n");
 						exit(1);
 					}else{
 						printf("sent: %s\n", buf);
-						if((n=read(fd_client,buffer,128))!=0){
+						if((n=read(fd_client,buffer,128))!=0){/*gets challenge*/
 							if(n==-1)exit(1);
 							if(n!=0){
 								sprintf(buf, "%s%s",key, ".txt");
 								
 								unsigned char b;
 								sscanf(buffer, "%s %c", command, &b);
-								int a=(int)b;
+								int a=(int)b;/*convert ASCII to integer*/
 								if(get_answer_file((*afd), a, buf)){
 									disconnect(&(*afd), &(*state));
 								}else{

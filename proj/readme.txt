@@ -10,6 +10,7 @@ the following authentication files are provided:
 -bernardo.gomes.txt
 -diogo.martins.txt
 -joao.teste.txt
+-teresa.teste.txt
 -ze.teste.txt
 -ze.martins.txt
 

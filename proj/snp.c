@@ -455,6 +455,13 @@ void registe(char**buff, char**argv, int fd, struct sockaddr_in addr, char*place
 			write(1, "echo: ",6);//stdout
 			write(1, *buff, strlen(*buff));
 			printf("\n");
+			char*NOK=malloc(4*sizeof(char));
+			if((sscanf(*buff, "%s", NOK))!=1) exit(-1);
+			if((strcmp(place, "register")==0)&&(strcmp(NOK, "NOK")==0)){
+				free(NOK);
+				exit(0);
+			}
+			free(NOK);
 	}
 	/*************************************************************/	
 	
@@ -462,7 +469,6 @@ void registe(char**buff, char**argv, int fd, struct sockaddr_in addr, char*place
 		printf("NOK - server not answering\n");
 		exit(1);
 	}
-	
 	return;
 	
 }

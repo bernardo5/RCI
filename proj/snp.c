@@ -218,43 +218,25 @@ void check_args(int argc, char**argv, int*server_specified){
 }
 
 void separate_delimiters_REG(char *str, char **name, char**surname, char**ip, int* scport){
-	char*port;
-	char *ip1, *ip2, *ip3, *ip4;
-	char *delimiter = " .;";
-	char *token;
-	// get the first token 
-	token = strtok(str, delimiter);
-   
-	// walk through other tokens 
-  
-    *name = strtok(NULL, delimiter);
-    *surname=strtok(NULL, delimiter);
-    ip1=strtok(NULL, delimiter);
-    ip2=strtok(NULL, delimiter);
-    ip3=strtok(NULL, delimiter);
-    ip4=strtok(NULL, delimiter);
-        
-    sprintf(*ip, "%s%s%s%s%s%s%s", ip1, ".", ip2, ".", ip3, ".", ip4);
-    port=strtok(NULL, delimiter);
-    sscanf(port, "%d", scport);
-   
+	char* command=malloc(15*sizeof(char));
+	sscanf(str, "%s %[^.].%[^;];%[^;];%d", command, *name, *surname, *ip, scport);
+	free(command);
 	return;
 }
 
 void separate_delimiters_UNR(char *str, char **name, char**surname){
-	char *delimiter = " .";
-	char *token;
-	// get the first token 
-	token = strtok(str, delimiter);
-   
-	// walk through other tokens 
-  
-    *name = strtok(NULL, delimiter);
-    *surname=strtok(NULL, delimiter);
-    sscanf(*surname, "%s", *surname);
-   
+	char* command=malloc(15*sizeof(char));
+	sscanf(str, "%s %[^.].%s", command, *name, *surname);
+    free(command);
 	return;
 	
+}
+
+void separate_delimiters_SRPL(char *str, char**surname, char**ip, int* scport){
+	char* command=malloc(15*sizeof(char));
+	sscanf(str, "%s %[^;];%[^;];%d", command, *surname, *ip, scport);
+	free(command);
+	return;
 }
 
 int validate_surname(char*surname_program, char*surname, char**buf){
@@ -268,7 +250,7 @@ int validate_surname(char*surname_program, char*surname, char**buf){
 char* ask_server(char*surname){
 	char* answer=malloc(128*sizeof(char));
 	char query[45];
-	
+	fd_set rfds;
 	int fd, n;
 	struct sockaddr_in addr;
 	struct hostent *h;
@@ -293,37 +275,34 @@ char* ask_server(char*surname){
 	addrlen=sizeof(addr);
 	n=sendto(fd, query, 45, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) return "error\n";//error
-	
-	/*receive echo part*/
 	addrlen=sizeof(addr);
-	n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
-	if(n==-1) return "error\n";//error
-	if(n<128) answer[n]='\0';
-	write(1, "echo: ",6);//stdout
-	write(1, answer, n);
-	printf("\n");
+	
+	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
+	FD_ZERO(&rfds);
+	FD_SET(fd,&rfds);
+	int counter=select(fd + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
+
+	if(counter<0){
+		printf("Error in select\n");
+		exit(1);//errror
+	}
+	
+	if(FD_ISSET(fd,&rfds)){			
+			n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
+			if(n==-1) return "error\n";//error
+			if(n<128) answer[n]='\0';
+			write(1, "echo: ",6);//stdout
+			write(1, answer, strlen(answer));
+			printf("\n");
+	}
+	/*************************************************************/	
+	
+	if(counter==0) return "NOK - can not reach server\n\0";
 	
 	return answer;	
 }
 
-void separate_delimiters_SRPL(char *str, char**surname, char**ip, int* scport){
-	char*port;
-	char *ip1, *ip2, *ip3, *ip4;
-	char *delimiter = " .;";
-	char *token;
-	// get the first token 
-	token = strtok(str, delimiter);
-	// walk through other tokens 
-    *surname=strtok(NULL, delimiter);
-    ip1=strtok(NULL, delimiter);
-    ip2=strtok(NULL, delimiter);
-    ip3=strtok(NULL, delimiter);
-    ip4=strtok(NULL, delimiter);
-    sprintf(*ip, "%s%s%s%s%s%s%s", ip1, ".", ip2, ".", ip3, ".", ip4);
-    port=strtok(NULL, delimiter);
-    sscanf(port, "%d", scport);
-	return;
-}
+
 
 char * get_user_location(char*server, char*name){
 	char *surname=malloc(15*sizeof(char));
@@ -360,7 +339,7 @@ char * get_user_location(char*server, char*name){
 	
 	
 	/***************************************************************/
-	struct timeval tv = {60, 0}; /*waits 1m for an answer*/
+	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
 	FD_ZERO(&rfds);
 	FD_SET(fd,&rfds);
 	counter=select(fd + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
@@ -375,7 +354,7 @@ char * get_user_location(char*server, char*name){
 			if(n==-1) return "error\n";//error
 			if(n<128) answer[n]='\0';
 			write(1, "echo: ",6);//stdout
-			write(1, answer, n);
+			write(1, answer, strlen(answer));
 			printf("\n");
 	}
 	/*************************************************************/	
@@ -458,13 +437,40 @@ void registe(char**buff, char**argv, int fd, struct sockaddr_in addr, char*place
 	/*receive echo part*/
 	empty_buffer(&(*buff));
 	addrlen=sizeof(addr);
-	n=recvfrom(fd, *buff, 128,0, (struct sockaddr*)&addr, &addrlen);
-	if(n==-1) exit(1);//error
-	if(n<128) (*buff)[n]='\0';
-	write(1, "echo: ",6);//stdout
-	write(1, *buff, n);
-	printf("\n");
+	fd_set rfds;
+	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
+	FD_ZERO(&rfds);
+	FD_SET(fd,&rfds);
+	int counter=select(fd + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
+
+	if(counter<0){
+		printf("Error in select\n");
+		exit(1);//errror
+	}
+	
+	if(FD_ISSET(fd,&rfds)){
+			n=recvfrom(fd, *buff, 128,0, (struct sockaddr*)&addr, &addrlen);
+			if(n==-1) exit(1);//error
+			if(n<128) (*buff)[n]='\0';
+			write(1, "echo: ",6);//stdout
+			write(1, *buff, strlen(*buff));
+			printf("\n");
+			char*NOK=malloc(4*sizeof(char));
+			if((sscanf(*buff, "%s", NOK))!=1) exit(-1);
+			if((strcmp(place, "register")==0)&&(strcmp(NOK, "NOK")==0)){
+				free(NOK);
+				exit(0);
+			}
+			free(NOK);
+	}
+	/*************************************************************/	
+	
+	if(counter==0){
+		printf("NOK - server not answering\n");
+		exit(1);
+	}
 	return;
+	
 }
 
 int main(int argc, char**argv){
@@ -572,7 +578,8 @@ int main(int argc, char**argv){
 			if(nread==-1)exit(1);//error
 			if(nread<128) buff[nread]='\0';
 			write(1, "received: ",10);//stdout
-			write(1, buff, nread);
+			write(1, buff, strlen(buff));
+			printf("\n");
 			validate_user_command(&buff, &name, &surname, &ip, &scport, argv[2], &root);
 			ret=sendto(fd, buff, 128,0,(struct sockaddr*)&addr, addrlen);
 			if(ret==-1)exit(1);

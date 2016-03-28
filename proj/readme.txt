@@ -1,0 +1,24 @@
+to compile files input on terminal:
+1-make clean
+2-make
+3-make schat
+
+to run the files, the sintax should be the one specified in the project assignment (if you dont know it just run it and the correct sintax will be presented to you by the program)
+
+the following authentication files are provided: 
+-keyfile.txt
+-bernardo.gomes.txt
+-diogo.martins.txt
+-joao.teste.txt
+-ze.teste.txt
+-ze.martins.txt
+
+So you can use already this names.
+
+For input keyfile dont type the ".txt" part. the program will append it automatically
+
+For any doubts contact us, we will be happy to talk about the project. Enjoy!
+
+bernardo-bernardo.n.gomes@tecnico.ulisboa.pt
+diogo-diogo.s.martins@tecnico.ulisboa.pt
+

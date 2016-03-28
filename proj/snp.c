@@ -250,7 +250,7 @@ int validate_surname(char*surname_program, char*surname, char**buf){
 char* ask_server(char*surname){
 	char* answer=malloc(128*sizeof(char));
 	char query[45];
-	
+	fd_set rfds;
 	int fd, n;
 	struct sockaddr_in addr;
 	struct hostent *h;
@@ -275,15 +275,29 @@ char* ask_server(char*surname){
 	addrlen=sizeof(addr);
 	n=sendto(fd, query, 45, 0, (struct sockaddr*)&addr, sizeof(addr));
 	if(n==-1) return "error\n";//error
-	
-	/*receive echo part*/
 	addrlen=sizeof(addr);
-	n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
-	if(n==-1) return "error\n";//error
-	if(n<128) answer[n]='\0';
-	write(1, "echo: ",6);//stdout
-	write(1, answer, strlen(answer));
-	printf("\n");
+	
+	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
+	FD_ZERO(&rfds);
+	FD_SET(fd,&rfds);
+	int counter=select(fd + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
+
+	if(counter<0){
+		printf("Error in select\n");
+		exit(1);//errror
+	}
+	
+	if(FD_ISSET(fd,&rfds)){			
+			n=recvfrom(fd, answer, 128,0, (struct sockaddr*)&addr, &addrlen);
+			if(n==-1) return "error\n";//error
+			if(n<128) answer[n]='\0';
+			write(1, "echo: ",6);//stdout
+			write(1, answer, strlen(answer));
+			printf("\n");
+	}
+	/*************************************************************/	
+	
+	if(counter==0) return "NOK - can not reach server\n\0";
 	
 	return answer;	
 }
@@ -325,7 +339,7 @@ char * get_user_location(char*server, char*name){
 	
 	
 	/***************************************************************/
-	struct timeval tv = {60, 0}; /*waits 1m for an answer*/
+	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
 	FD_ZERO(&rfds);
 	FD_SET(fd,&rfds);
 	counter=select(fd + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
@@ -423,13 +437,34 @@ void registe(char**buff, char**argv, int fd, struct sockaddr_in addr, char*place
 	/*receive echo part*/
 	empty_buffer(&(*buff));
 	addrlen=sizeof(addr);
-	n=recvfrom(fd, *buff, 128,0, (struct sockaddr*)&addr, &addrlen);
-	if(n==-1) exit(1);//error
-	if(n<128) (*buff)[n]='\0';
-	write(1, "echo: ",6);//stdout
-	write(1, *buff, strlen(*buff));
-	printf("\n");
+	fd_set rfds;
+	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
+	FD_ZERO(&rfds);
+	FD_SET(fd,&rfds);
+	int counter=select(fd + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
+
+	if(counter<0){
+		printf("Error in select\n");
+		exit(1);//errror
+	}
+	
+	if(FD_ISSET(fd,&rfds)){
+			n=recvfrom(fd, *buff, 128,0, (struct sockaddr*)&addr, &addrlen);
+			if(n==-1) exit(1);//error
+			if(n<128) (*buff)[n]='\0';
+			write(1, "echo: ",6);//stdout
+			write(1, *buff, strlen(*buff));
+			printf("\n");
+	}
+	/*************************************************************/	
+	
+	if(counter==0){
+		printf("NOK - server not answering\n");
+		exit(1);
+	}
+	
 	return;
+	
 }
 
 int main(int argc, char**argv){

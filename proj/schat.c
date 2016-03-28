@@ -55,14 +55,35 @@ void join(char**argv,int fd_udp, int *leav, struct sockaddr_in addr_udp, socklen
 	n_udp=sendto(fd_udp, buffer_udp, strlen(buffer_udp), 0, (struct sockaddr*)&addr_udp, sizeof(addr_udp));
 	if(n_udp==-1) exit(1);//error
 	/*receive echo part*/
-	(*addrlen_udp)=sizeof(addr_udp);				
-				
-	n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
-	if(n_udp==-1) exit(1);//error
-	write(1, "echo: ",6);//stdout
-	buffer_udp[n_udp]='\0';
-	printf("%s\n", buffer_udp);
-	(*leav)=0;
+	(*addrlen_udp)=sizeof(addr_udp);	
+	
+	
+	fd_set rfds;
+			
+	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
+	FD_ZERO(&rfds);
+	FD_SET(fd_udp,&rfds);
+	int counter=select(fd_udp + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
+
+	if(counter<0){
+		printf("Error in select\n");
+		exit(1);//errror
+	}
+			
+	if(FD_ISSET(fd_udp,&rfds)){
+		n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
+		if(n_udp==-1) exit(1);//error
+		write(1, "echo: ",6);//stdout
+		buffer_udp[n_udp]='\0';
+		printf("%s\n", buffer_udp);
+		(*leav)=0;
+	}
+	/*************************************************************/	
+		
+	if(counter==0){
+		printf("NOK - server not answering\n");
+		exit(1);
+	}
 	
 	free(buffer_udp);
 	return;
@@ -79,12 +100,34 @@ void leave(char**argv, int*leav, int fd_udp, struct sockaddr_in addr_udp, sockle
 	
 	/*receive echo part*/				
 	(*addrlen_udp)=sizeof(addr_udp);
-	n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
-	if(n_udp==-1) exit(1);//error
-	write(1, "echo: ",6);//stdout
-	(buffer_udp)[n_udp]='\0';
-	printf("%s\n", (buffer_udp));
+	
+	
+	fd_set rfds;
+			
+	struct timeval tv = {10, 0}; /*waits 1m for an answer*/
+	FD_ZERO(&rfds);
+	FD_SET(fd_udp,&rfds);
+	int counter=select(fd_udp + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
+
+	if(counter<0){
+		printf("Error in select\n");
+		exit(1);//errror
+	}
+			
+	if(FD_ISSET(fd_udp,&rfds)){
+		n_udp=recvfrom(fd_udp, buffer_udp, 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
+		if(n_udp==-1) exit(1);//error
+		write(1, "echo: ",6);//stdout
+		(buffer_udp)[n_udp]='\0';
+		printf("%s\n", (buffer_udp));
+	}
+	/*************************************************************/	
 		
+	if(counter==0){
+		printf("NOK - server not answering\n");
+		exit(1);
+	}
+
 	free(buffer_udp);
 	return;
 }
@@ -106,11 +149,31 @@ void find(char**buffer_udp, char*keyboard, int fd_udp, struct sockaddr_in addr_u
 			/*receive echo part*/
 							
 			(*addrlen_udp)=sizeof(addr_udp);
-			n_udp=recvfrom(fd_udp, (*buffer_udp), 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
-			if(n_udp==-1) exit(1);//error
-			write(1, "echo: ",6);//stdout
-			(*buffer_udp)[n_udp]='\0';
-			printf("%s\n", (*buffer_udp));
+			
+			fd_set rfds;
+			
+			struct timeval tv = {30, 0}; /*waits 1m for an answer*/
+			FD_ZERO(&rfds);
+			FD_SET(fd_udp,&rfds);
+			int counter=select(fd_udp + 1,&rfds,(fd_set*)NULL,(fd_set*)NULL,&tv);
+
+			if(counter<0){
+				printf("Error in select\n");
+				exit(1);//errror
+			}
+			
+			if(FD_ISSET(fd_udp,&rfds)){
+					n_udp=recvfrom(fd_udp, (*buffer_udp), 128,0, (struct sockaddr*)&addr_udp, &(*addrlen_udp));
+					if(n_udp==-1) exit(1);//error
+					write(1, "echo: ",6);//stdout
+					(*buffer_udp)[n_udp]='\0';
+					printf("%s\n", (*buffer_udp));
+			}
+			/*************************************************************/	
+			
+			if(counter==0){
+				printf("NOK - server not answering\n");
+			}
 		}
 	}
 	free(names);

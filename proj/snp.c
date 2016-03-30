@@ -88,6 +88,10 @@ int main(int argc, char**argv){
 						
 					registe(&buffer, argv, fd, addr, "exit"); /*tells the server that the surname wont be available any more*/
 					close(fd);
+					free(name);
+					free(surname);
+					free(ip);
+					PosFixed_delete_tree(&root);
 					exit(0);
 				}else{
 					if(strcmp(buf, "list\n")==0){

@@ -30,3 +30,5 @@ void DeleteUser(user**root, char*name, char**buf);
 int min(int a, int b);
 
 void put_to_null(user**root, char*name);
+
+void PosFixed_delete_tree(user** base_node);

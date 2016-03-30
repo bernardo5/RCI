@@ -183,7 +183,17 @@ char * get_user_location(char*server, char*name){ /*asks a name server the locat
 	}
 	/*************************************************************/	
 	
-	if(counter==0) return "NOK - can not reach server\n\0";
+	if(counter==0){		
+		free(surname);
+		free(snpip);
+		free(answer);
+		return "NOK - can not reach server\n\0";
+	}
+	
+	free(surname);
+	free(snpip);
+	free(answer);
+	
 	
 	return answer;
 	

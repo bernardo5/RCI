@@ -156,3 +156,11 @@ void AddUser(user**root, char*name, char*ip, int scport, char**buf){
 	return;
 }
 
+void PosFixed_delete_tree(user** base_node){
+  if((*base_node)==NULL) return;
+  PosFixed_delete_tree(&(*base_node)->left);
+  PosFixed_delete_tree(&(*base_node)->right);
+  free(*base_node);
+  return;
+}
+

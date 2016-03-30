@@ -240,7 +240,7 @@ void disconnect(int*afd, STATE*s){
 }
 
 void message(char*keyboard, STATE state, int* fd_client, int afd){
-	int nw;
+	int nw, flag=0;
 	char *buf=malloc(30*sizeof(char));
 	char *command=malloc(15*sizeof(char));
 	
@@ -254,11 +254,14 @@ void message(char*keyboard, STATE state, int* fd_client, int afd){
 					printf("error sending message\n");
 					exit(1);
 				}else printf("sent: %s\n", buf);
-			}else printf("NOK - write a shorter message please\n");
+			}else{
+				printf("NOK - write a shorter message please\n");
+				flag=1;
+			}
 		}
 							
 	}
-	free(buf);
+	if(!flag)free(buf);
 	free(command);
 	return;
 }

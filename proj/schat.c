@@ -106,7 +106,7 @@ int main(int argc, char**argv)
 			switch(state)
 			{
 				case idle: afd=newfd; state=busy; break;
-				case busy: if((nw=write(newfd,"BUSY\n",n))<=0)exit(1);//error
+				case busy: if((nw=write(newfd,"BUSY\n",strlen("BUSY\n")))<=0)exit(1);//error
 				close(newfd); break;
 			}
 		}

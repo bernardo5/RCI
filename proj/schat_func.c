@@ -248,13 +248,13 @@ void message(char*keyboard, STATE state, int* fd_client, int afd){
 		printf("not enough arguments\n");
 	}else{
 		if(state==busy){
-			/*printf("input: %s\n", keyboard);
-			printf("message to send: %s\n", buf);*/
 			(*fd_client)=afd;
-			if((nw=write((*fd_client),buf,strlen(buf)+1))<=0){
-				printf("error sending message\n");
-				exit(1);
-			}else printf("sent: %s\n", buf);
+			if(strlen(buf)<30){
+				if((nw=write((*fd_client),buf,strlen(buf)+1))<=0){
+					printf("error sending message\n");
+					exit(1);
+				}else printf("sent: %s\n", buf);
+			}else printf("NOK - write a shorter message please\n");
 		}
 							
 	}

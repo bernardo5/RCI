@@ -305,18 +305,25 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 						if((n=read(fd_client,buffer,128))!=0){/*gets challenge*/
 							if(n==-1)exit(1);
 							if(n!=0){
-								sprintf(buf, "%s%s",key, ".txt");
-								
-								unsigned char b;
-								sscanf(buffer, "%s %c", command, &b);
-								int a=(int)b;/*convert ASCII to integer*/
-								if(get_answer_file((*afd), a, buf)){
-									disconnect(&(*afd), &(*state));
+								buffer[n]='\0';
+								printf("buffer:%s\n", buffer);
+								if(strcmp(buffer, "BUSY\n")!=0){
+									sprintf(buf, "%s%s",key, ".txt");
+									
+									unsigned char b;
+									sscanf(buffer, "%s %c", command, &b);
+									int a=(int)b;/*convert ASCII to integer*/
+									if(get_answer_file((*afd), a, buf)){
+										disconnect(&(*afd), &(*state));
+									}else{
+									/*reverse authentication*/
+									srand(time(NULL));
+									if(send_challenge(rand()%256, fd_client, n, buf)){disconnect(&(*afd), &(*state));}
+									}
 								}else{
-								/*reverse authentication*/
-								srand(time(NULL));
-								if(send_challenge(rand()%256, fd_client, n, buf)){disconnect(&(*afd), &(*state));}
-								}
+									 printf("User is busy\n");
+									 disconnect(&(*afd), &(*state));
+								 }
 							}else disconnect(&(*afd), &(*state));
 						}
 					}					

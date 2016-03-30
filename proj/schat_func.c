@@ -240,28 +240,23 @@ void disconnect(int*afd, STATE*s){
 }
 
 void message(char*keyboard, STATE state, int* fd_client, int afd){
-	int nw, flag=0;
+	int nw;
 	char *buf=malloc(30*sizeof(char));
 	char *command=malloc(15*sizeof(char));
 	
-	if(sscanf(keyboard, "%s %[^\n]s", command, buf)!=2){
+	if(sscanf(keyboard, "%14s %29[^\n]s", command, buf)!=2){
 		printf("not enough arguments\n");
 	}else{
 		if(state==busy){
 			(*fd_client)=afd;
-			if(strlen(buf)<30){
-				if((nw=write((*fd_client),buf,strlen(buf)+1))<=0){
-					printf("error sending message\n");
-					exit(1);
-				}else printf("sent: %s\n", buf);
-			}else{
-				printf("NOK - write a shorter message please\n");
-				flag=1;
-			}
+			if((nw=write((*fd_client),buf,strlen(buf)+1))<=0){
+				printf("error sending message\n");
+				exit(1);
+			}else printf("sent: %s\n", buf);
 		}
 							
 	}
-	if(!flag)free(buf);
+	free(buf);
 	free(command);
 	return;
 }

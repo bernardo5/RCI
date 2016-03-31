@@ -77,7 +77,7 @@ void join(char**argv,int fd_udp, int *leav, struct sockaddr_in addr_udp, socklen
 }
 
 void leave(char**argv, int*leav, int fd_udp, struct sockaddr_in addr_udp, socklen_t *addrlen_udp ){
-	char*buffer_udp=malloc(128*sizeof(char));
+	char buffer_udp[128];
 	int n_udp;
 	
 	sprintf(buffer_udp, "%s %s\n","UNR", argv[2]);
@@ -114,8 +114,6 @@ void leave(char**argv, int*leav, int fd_udp, struct sockaddr_in addr_udp, sockle
 		printf("NOK - server not answering\n");
 		exit(1);
 	}
-
-	free(buffer_udp);
 	return;
 }
 
@@ -241,10 +239,10 @@ void disconnect(int*afd, STATE*s){
 
 void message(char*keyboard, STATE state, int* fd_client, int afd){
 	int nw;
-	char *buf=malloc(30*sizeof(char));
+	char *buf=malloc(128*sizeof(char));
 	char *command=malloc(15*sizeof(char));
 	
-	if(sscanf(keyboard, "%14s %29[^\n]s", command, buf)!=2){
+	if(sscanf(keyboard, "%s %[^\n]s", command, buf)!=2){
 		printf("not enough arguments\n");
 	}else{
 		if(state==busy){
@@ -316,7 +314,7 @@ void connect_(char**argv, int *afd, int fd_client,struct sockaddr_in* addr_clien
 									}else{
 									/*reverse authentication*/
 									srand(time(NULL));
-									if(send_challenge(rand()%256, fd_client, n, buf)){disconnect(&(*afd), &(*state));}
+									if(send_challenge(rand()%255, fd_client, n, buf)){disconnect(&(*afd), &(*state));}
 									}
 								}else{
 									 printf("User is busy\n");

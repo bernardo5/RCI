@@ -32,7 +32,7 @@ int main(int argc, char**argv)
 	int n, nw;
 	char *buffer=malloc(128*sizeof(char));
 	
-	char *keyboard=malloc(45*sizeof(char));
+	char *keyboard=malloc((128+strlen("message "))*sizeof(char));
 	char *command=malloc(15*sizeof(char));
 	char*names=malloc(15*sizeof(char));
 	
@@ -65,7 +65,7 @@ int main(int argc, char**argv)
 		if(counter<=0)exit(1);//errror
 		
 		if(FD_ISSET(fileno(stdin), &rfds)){ /*checks for keyboard input*/
-			fgets(keyboard, 45, stdin);
+			fgets(keyboard, 128+strlen("message "), stdin);
 			if(sscanf(keyboard, "%s", command)==1){
 				if(strcmp(command, "join")==0){
 					join(argv, fd_udp, &leav, addr_udp, &addrlen_udp);
@@ -92,9 +92,8 @@ int main(int argc, char**argv)
 						}			
 							if(state==busy) disconnect(&afd, &state);
 							close(fd_udp);
-							free_strings(&buffer, &keyboard, &command, &names);
+							//free_strings(&buffer, &keyboard, &command, &names);
 							exit(0);
-							//}else printf("please leave before exit\n");
 					}
 			}
 			/****************************************/
@@ -121,7 +120,7 @@ int main(int argc, char**argv)
 						printf("Attempt to connect by %s\n", names);
 						srand(time(NULL));
 						sprintf(buffer,"%s%s", names, ".txt");
-						if(send_challenge(rand()%256, afd, n, buffer)){
+						if(send_challenge(rand()%255, afd, n, buffer)){
 							disconnect(&afd, &state);
 						}else{
 							bzero(command, strlen(command));

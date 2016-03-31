@@ -241,7 +241,7 @@ void disconnect(int*afd, STATE*s){
 
 void message(char*keyboard, STATE state, int* fd_client, int afd){
 	int nw;
-	char *buf=malloc(30*sizeof(char));
+	char *buf=malloc(128*sizeof(char));
 	char *command=malloc(15*sizeof(char));
 	
 	if(sscanf(keyboard, "%14s %29[^\n]s", command, buf)!=2){

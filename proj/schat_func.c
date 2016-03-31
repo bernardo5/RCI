@@ -242,9 +242,10 @@ void disconnect(int*afd, STATE*s){
 void message(char*keyboard, STATE state, int* fd_client, int afd){
 	int nw;
 	char *buf=malloc(128*sizeof(char));
+	bzero(buf, 128);
 	char *command=malloc(15*sizeof(char));
 	
-	if(sscanf(keyboard, "%14s %127[^\n]s", command, buf)!=2){
+	if(sscanf(keyboard, "%s %s", command, buf)!=2){
 		printf("not enough arguments\n");
 	}else{
 		if(state==busy){

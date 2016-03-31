@@ -92,7 +92,11 @@ int main(int argc, char**argv)
 						}			
 							if(state==busy) disconnect(&afd, &state);
 							close(fd_udp);
-							free_strings(&buffer, &keyboard, &command, &names);
+							//free_strings(&buffer, &keyboard, &command, &names);
+							free(buffer);
+							free(keyboard);
+							free(command);
+							free(names);
 							exit(0);
 							//}else printf("please leave before exit\n");
 					}

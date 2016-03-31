@@ -244,7 +244,7 @@ void message(char*keyboard, STATE state, int* fd_client, int afd){
 	char *buf=malloc(128*sizeof(char));
 	char *command=malloc(15*sizeof(char));
 	
-	if(sscanf(keyboard, "%14s %29[^\n]s", command, buf)!=2){
+	if(sscanf(keyboard, "%14s %127[^\n]s", command, buf)!=2){
 		printf("not enough arguments\n");
 	}else{
 		if(state==busy){

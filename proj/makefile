@@ -1,3 +1,7 @@
+all:
+	gcc snp.c tree.c snp_func.c -o snp -g
+	gcc schat.c schat_func.c -o schat -g
+
 snp:
 	gcc snp.c tree.c snp_func.c -o snp -g
 
